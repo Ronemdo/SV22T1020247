@@ -1,0 +1,45 @@
+﻿@model Category
+@{
+    ViewBag.Title = "Xóa loại hàng";
+}
+
+@section PageToolBar {
+    @if (ViewBag.AllowDelete)
+    {
+        <button type="submit" form="formDelete" class="btn btn-danger">
+            <i class="bi bi-trash"></i> Xóa
+        </button>
+    }
+    <a href="~/Category" class="btn btn-secondary ms-1">
+        Quay lại
+    </a>
+}
+
+<div class="card card-danger card-outline">
+    <div class="card-header text-danger">
+        <h5 class="card-title mb-0">Xác nhận xóa dữ liệu</h5>
+    </div>
+    <div class="card-body">
+        <form id="formDelete" method="post" action="~/Category/Delete/@Model.CategoryID">
+            @if (ViewBag.AllowDelete)
+            {
+                <div class="alert alert-warning">
+                    Bạn có chắc chắn muốn xóa loại hàng <strong>@Model.CategoryName</strong>?
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    Không thể xóa loại hàng này vì đang có các mặt hàng thuộc nhóm này!
+                </div>
+            }
+
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Tên loại hàng:</dt>
+                <dd class="col-sm-9">@Model.CategoryName</dd>
+                <dt class="col-sm-3">Mô tả:</dt>
+                <dd class="col-sm-9">@Model.Description</dd>
+            </dl>
+        </form>
+    </div>
+</div>

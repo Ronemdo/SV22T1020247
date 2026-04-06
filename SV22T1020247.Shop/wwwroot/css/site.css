@@ -1,0 +1,191 @@
+﻿/* =========================================
+   1. CẤU HÌNH BỐ CỤC CHUNG (Của bạn)
+   ========================================= */
+html {
+    font-size: 14px;
+    height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* =========================================
+   2. HIỆU ỨNG GIAO DIỆN NÂNG CAO
+   ========================================= */
+
+/* Hiệu ứng gạch chân chạy ra cho Menu Nav */
+.nav-custom-link {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+    .nav-custom-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        background-color: #dc3545; /* Màu đỏ Danger của Bootstrap */
+        transition: width 0.3s ease;
+    }
+
+    .nav-custom-link:hover::after,
+    .nav-custom-link.active::after {
+        width: 100%;
+    }
+
+/* Thanh tìm kiếm bo tròn mềm mại */
+.search-box-custom .form-control {
+    border-radius: 25px 0 0 25px;
+    padding-left: 20px;
+    box-shadow: none;
+}
+
+.search-box-custom .btn {
+    border-radius: 0 25px 25px 0;
+    padding-right: 20px;
+}
+
+.search-box-custom:focus-within {
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    border-radius: 25px;
+}
+
+/* Hiệu ứng nút giỏ hàng */
+.btn-cart-custom {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .btn-cart-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+/* Hiệu ứng trượt cho link ở Footer */
+.footer-link {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: color 0.3s ease, padding-left 0.3s ease;
+    display: inline-block;
+}
+
+    .footer-link:hover {
+        color: #ffffff;
+        padding-left: 8px; /* Trượt nhẹ sang phải */
+    }
+
+/* Top bar phụ trên cùng */
+.top-bar {
+    font-size: 0.85rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Hiệu ứng di chuột cho Dropdown Menu User */
+.dropdown-hover:hover {
+    background-color: #f8f9fa;
+    padding-left: 1.5rem !important; /* Trượt nhẹ icon vào trong */
+    transition: all 0.2s ease;
+}
+
+.dropdown-hover {
+    transition: all 0.2s ease;
+}
+
+/* =========================================
+   HIỆU ỨNG SẢN PHẨM & GIAO DIỆN NÂNG CAO
+   ========================================= */
+
+/* 1. Hiệu ứng cho Mặt hàng (Sản phẩm) */
+main .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none; /* Bỏ viền cứng mặc định */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Bóng đổ nhẹ lúc bình thường */
+    border-radius: 12px; /* Bo góc thẻ sản phẩm */
+    overflow: hidden;
+}
+
+    /* Nổi thẻ sản phẩm lên và đổ bóng to ra khi di chuột vào */
+    main .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 25px rgba(220, 53, 69, 0.15); /* Bóng đổ có hơi hướng màu đỏ */
+        z-index: 10;
+    }
+
+    /* Hiệu ứng zoom nhẹ ảnh sản phẩm khi hover */
+    main .card img {
+        transition: transform 0.5s ease;
+    }
+
+    main .card:hover img {
+        transform: scale(1.06);
+    }
+
+/* 2. Hiệu ứng phụ cho Layout (Nút giỏ hàng, Menu) */
+.nav-cart-btn {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+    .nav-cart-btn:hover {
+        transform: scale(1.1);
+        background-color: #f8d7da !important; /* Đỏ nhạt */
+    }
+
+.dropdown-hover:hover {
+    background-color: #f8f9fa;
+    padding-left: 1.5rem !important; /* Chữ trong menu trượt nhẹ sang phải */
+    transition: padding 0.2s ease;
+}
+
+.footer-link {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: color 0.2s ease, padding-left 0.2s ease;
+    display: inline-block;
+}
+
+    .footer-link:hover {
+        color: #ffffff;
+        padding-left: 5px;
+    }
+
+.footer-icon-hover {
+    transition: transform 0.2s ease, color 0.2s ease;
+    display: inline-block;
+}
+
+    .footer-icon-hover:hover {
+        transform: translateY(-3px) scale(1.1);
+        color: #ffffff !important;
+    }

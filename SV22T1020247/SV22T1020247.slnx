@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Applications/">
+    <Project Path="SV22T1020247.Admin/SV22T1020247.Admin.csproj" />
+    <Project Path="SV22T1020247.Shop/SV22T1020247.Shop.csproj" />
+  </Folder>
+  <Folder Name="/Libraries/">
+    <Project Path="SV22T1020247.BusinessLayers/SV22T1020247.BusinessLayers.csproj" />
+    <Project Path="SV22T1020247.DataLayers/SV22T1020247.DataLayers.csproj" />
+    <Project Path="SV22T1020247.Models/SV22T1020247.Models.csproj" />
+  </Folder>
+  <Folder Name="/Notes/">
+    <File Path="ImplementDataLayers.md" />
+  </Folder>
+</Solution>

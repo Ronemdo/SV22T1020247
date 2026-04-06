@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="FakesAssemblies\**" />
+    <Content Remove="FakesAssemblies\**" />
+    <EmbeddedResource Remove="FakesAssemblies\**" />
+    <None Remove="FakesAssemblies\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.QualityTools.Testing.Fakes" Version="17.5.0-beta.23060.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SV22T1020247.BusinessLayers\SV22T1020247.BusinessLayers.csproj" />
+    <ProjectReference Include="..\SV22T1020247.DataLayers\SV22T1020247.DataLayers.csproj" />
+    <ProjectReference Include="..\SV22T1020247.Models\SV22T1020247.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalDesignTimeBuildInput Remove="FakesAssemblies\**" />
+  </ItemGroup>
+
+</Project>

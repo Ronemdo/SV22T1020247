@@ -1,0 +1,75 @@
+﻿@model SV22T1020247.Models.Common.PagedResult<SV22T1020247.Models.Sales.OrderViewInfo>
+@{
+
+    ViewData["Title"] = "Lịch sử đơn hàng";
+}
+
+<div class="container mt-5 mb-5">
+    <h3 class="fw-bold mb-4">Lịch sử đơn hàng của bạn</h3>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle m-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center">Mã Đơn</th>
+                            <th>Ngày đặt</th>
+                            <th>Địa chỉ giao hàng</th>
+                            <th class="text-center">Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.DataItems == null || !Model.DataItems.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">Bạn chưa có đơn hàng nào.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model.DataItems)
+                            {
+                                <tr>
+                                    <td class="text-center fw-bold">#@item.OrderID</td>
+                                    <td>@item.OrderTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <div><strong>@item.DeliveryProvince</strong></div>
+                                        <div class="small text-muted">@item.DeliveryAddress</div>
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.Raw(GetStatusBadge(item.Status))
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="~/Order/Details/@item.OrderID" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Xem chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    // Sửa kiểu dữ liệu của tham số từ int thành kiểu Enum của bạn
+    public string GetStatusBadge(SV22T1020247.Models.Sales.OrderStatusEnum status)
+    {
+        // Ép kiểu (int) ở đây để so sánh với các con số 1, 2, 3...
+        return ((int)status) switch
+        {
+            1 => "<span class='badge bg-info text-dark'>Đơn hàng mới</span>",
+            2 => "<span class='badge bg-primary'>Đã duyệt</span>",
+            3 => "<span class='badge bg-warning text-dark'>Đang giao hàng</span>",
+            4 => "<span class='badge bg-success'>Đã hoàn tất</span>",
+            -1 => "<span class='badge bg-danger'>Đã hủy</span>",
+            -2 => "<span class='badge bg-secondary'>Bị từ chối</span>",
+            _ => "<span class='badge bg-light text-dark'>Không xác định</span>"
+        };
+    }
+}

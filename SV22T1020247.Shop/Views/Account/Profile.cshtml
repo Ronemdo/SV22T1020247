@@ -1,0 +1,209 @@
+﻿@model SV22T1020247.Models.Partner.Customer
+@{
+    ViewBag.Title = "Hồ sơ cá nhân";
+}
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .profile-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #A52A2A 0%, #631212 100%);
+        padding: 40px 20px;
+        text-align: center;
+        color: white;
+    }
+
+    .profile-avatar-circle {
+        width: 100px;
+        height: 100px;
+        background: rgba(255,255,255,0.2);
+        border: 4px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        font-size: 3rem;
+    }
+
+    .form-label {
+        color: #4B1010;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 12px;
+        padding: 12px 15px;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #A52A2A;
+            box-shadow: 0 0 0 0.25rem rgba(165, 42, 42, 0.1);
+        }
+
+        .form-control[readonly] {
+            background-color: #f1f3f5;
+            color: #6c757d;
+        }
+
+    .btn-save {
+        background: linear-gradient(135deg, #A52A2A 0%, #8B0000 100%);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        font-weight: bold;
+        border-radius: 50px;
+        transition: 0.3s;
+    }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(165,42,42,0.3);
+            color: white;
+        }
+
+    .btn-change-pass {
+        border-radius: 50px;
+        padding: 12px 25px;
+        font-weight: 600;
+        border: 2px solid #A52A2A;
+        color: #A52A2A;
+        transition: 0.3s;
+    }
+
+        .btn-change-pass:hover {
+            background-color: #A52A2A;
+            color: white;
+        }
+
+    .input-group-text {
+        background: none;
+        border-right: none;
+        color: #A52A2A;
+    }
+
+    .has-icon .form-control {
+        border-left: none;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+
+            <div class="card profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar-circle">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">@Model.CustomerName</h3>
+                    <p class="mb-0 opacity-75">Thành viên thân thiết của NhatNam-Shop</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success border-0 shadow-sm rounded-4 mb-4">
+                            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Message"]
+                        </div>
+                    }
+
+                    <form action="~/Account/Profile" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="CustomerID" value="@Model.CustomerID" />
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                                <div class="input-group has-icon">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    <input type="text" class="form-control" name="CustomerName" value="@Model.CustomerName" required />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tên giao dịch</label>
+                                <div class="input-group has-icon">
+                                    <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+                                    <input type="text" class="form-control" name="ContactName" value="@Model.ContactName" />
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Email đăng nhập</label>
+                                <div class="input-group has-icon">
+                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" class="form-control" name="Email" value="@Model.Email" readonly />
+                                </div>
+                                <div class="form-text text-muted small mt-2">
+                                    <i class="bi bi-info-circle me-1"></i> Email được sử dụng để định danh và không thể thay đổi.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Số điện thoại</label>
+                                <div class="input-group has-icon">
+                                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                    <input type="text" class="form-control" name="Phone" value="@Model.Phone" />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tỉnh/Thành phố</label>
+                                <div class="input-group has-icon">
+                                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                    <select class="form-select" name="Province">
+                                        <option value="">-- Chọn Tỉnh/Thành --</option>
+                                        @foreach (var p in ViewBag.Provinces)
+                                        {
+                                            <option value="@p.ProvinceName" selected="@(p.ProvinceName == Model.Province)">@p.ProvinceName</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Địa chỉ chi tiết</label>
+                                <div class="input-group has-icon">
+                                    <span class="input-group-text"><i class="bi bi-house"></i></span>
+                                    <input type="text" class="form-control" name="Address" value="@Model.Address" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-5 opacity-25">
+
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                            <a href="~/Account/ChangePassword" class="btn btn-change-pass order-2 order-md-1">
+                                <i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu
+                            </a>
+                            <button type="submit" class="btn btn-save order-1 order-md-2 shadow-sm px-5">
+                                <i class="bi bi-cloud-upload me-2"></i> LƯU THAY ĐỔI
+                            </button>
+                        </div>
+
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger mt-4 small" })
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-4 mb-5 text-muted small">
+                Cập nhật thông tin chính xác giúp chúng tôi phục vụ bạn tốt hơn.
+            </div>
+        </div>
+    </div>
+</div>

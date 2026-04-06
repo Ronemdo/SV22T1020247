@@ -1,0 +1,109 @@
+﻿@model IEnumerable<SV22T1020247.Shop.Models.CartItem>
+@{
+
+    ViewData["Title"] = "Giỏ hàng của bạn";
+    string adminImageBaseUrl = "https://localhost:7219/images/products/";
+    decimal totalCart = 0;
+}
+
+<div class="container mt-5 mb-5">
+    <h2 class="fw-bold mb-4"><i class="bi bi-cart3"></i> GIỎ HÀNG</h2>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle m-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Sản phẩm</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-end">Thành tiền</th>
+                                    <th class="text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    totalCart += item.TotalPrice;
+                                    <tr>
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <img src="@adminImageBaseUrl@(string.IsNullOrEmpty(item.Photo) ? "no-image.jpg" : item.Photo)"
+                                                     class="card-img-top"
+                                                     alt="@item.ProductName"
+                                                     style="height: 200px; object-fit: cover; padding: 10px;"
+                                                     onerror="this.onerror=null; this.src='/images/no-image.jpg';">
+                                                <div class="ms-3">
+                                                    <h6 class="mb-0 fw-bold">@item.ProductName</h6>
+                                                    <small class="text-muted">Đơn giá: @item.SalePrice.ToString("N0") đ</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center" style="width: 150px;">
+                                            <form action="~/Cart/UpdateCart" method="post" class="input-group input-group-sm">
+                                                <input type="hidden" name="productId" value="@item.ProductID" />
+                                                <input type="number" name="quantity" class="form-control text-center"
+                                                       value="@item.Quantity" min="1" onchange="this.form.submit()">
+                                            </form>
+                                        </td>
+                                        <td class="text-end fw-bold text-danger">
+                                            @item.TotalPrice.ToString("N0") đ
+                                        </td>
+                                        <td class="text-center pe-4">
+                                            <a href="~/Cart/RemoveFromCart/@item.ProductID"
+                                               class="text-muted"
+                                               onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <a href="~/" class="btn btn-link text-decoration-none p-0 text-dark">
+                    <i class="bi bi-arrow-left"></i> Tiếp tục mua hàng
+                </a>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 p-4">
+                    <h5 class="fw-bold mb-4">Tạm tính</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính</span>
+                        <span>@totalCart.ToString("N0") đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span>Phí vận chuyển</span>
+                        <span class="text-success">Miễn phí</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fw-bold fs-5">Tổng cộng</span>
+                        <span class="fw-bold fs-5 text-danger">@totalCart.ToString("N0") đ</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="~/Cart/Checkout" class="btn btn-danger btn-lg py-3 fw-bold rounded-pill shadow-sm">
+                            TIẾN HÀNH THANH TOÁN
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 shadow-sm bg-white rounded">
+            <img src="https://cdn-icons-png.flaticon.com/512/11329/11329060.png" style="width: 150px;" class="mb-4 opacity-50">
+            <h4 class="text-muted">Giỏ hàng của bạn đang trống</h4>
+            <p class="text-muted">Hãy chọn thêm sản phẩm rồi quay lại đây nhé!</p>
+            <a href="~/" class="btn btn-danger px-5 py-2 mt-3 rounded-pill fw-bold">MUA SẮM NGAY</a>
+        </div>
+    }
+</div>

@@ -1,0 +1,273 @@
+﻿@model SV22T1020247.Models.Sales.OrderViewInfo
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.OrderID;
+
+    // Lấy danh sách mặt hàng từ ViewBag (Nhớ ép kiểu)
+    var details = ViewBag.OrderDetails as List<SV22T1020247.Models.Sales.OrderDetailViewInfo>;
+
+    // Tính tổng tiền đơn hàng
+    decimal grandTotal = details?.Sum(item => item.TotalPrice) ?? 0;
+    int currentStatus = (int)Model.Status;
+
+    // Đường dẫn ảnh (giống bên trang sản phẩm của bạn)
+    string adminImageBaseUrl = "https://localhost:7219/images/products/";
+}
+
+<style>
+    /* CSS CHUẨN CHO THANH TIẾN TRÌNH (STEPPER) */
+    .stepper-wrapper {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .stepper-item {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        z-index: 1;
+    }
+
+        .stepper-item::before {
+            position: absolute;
+            content: "";
+            border-bottom: 3px solid #e0e0e0;
+            width: 100%;
+            top: 15px;
+            left: -50%;
+            z-index: -1;
+        }
+
+        .stepper-item:first-child::before {
+            content: none;
+        }
+
+    .step-counter {
+        position: relative;
+        z-index: 5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        color: white;
+        margin-bottom: 8px;
+        font-size: 1.2rem;
+    }
+
+    .stepper-item.completed .step-counter,
+    .stepper-item.active .step-counter {
+        background-color: #198754;
+    }
+
+    .stepper-item.completed::before,
+    .stepper-item.active::before {
+        border-bottom: 3px solid #198754;
+    }
+
+    .step-name {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #555;
+    }
+
+    .stepper-item.completed .step-name,
+    .stepper-item.active .step-name {
+        color: #198754;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container mt-4 mb-5">
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show shadow-sm" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="~/Order/Index" class="text-decoration-none text-muted mb-2 d-inline-block">
+                <i class="bi bi-arrow-left"></i> Quay lại lịch sử
+            </a>
+            <h3 class="fw-bold mb-1">Chi tiết đơn hàng #@Model.OrderID</h3>
+            <p class="text-muted small mb-0">Ngày đặt: @Model.OrderTime.ToString("dd/MM/yyyy HH:mm")</p>
+        </div>
+
+        <div>
+            @if (currentStatus == 1)
+            {
+                <a href="~/Order/Cancel/@Model.OrderID"
+                   class="btn btn-outline-danger me-2 shadow-sm"
+                   onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                    <i class="bi bi-x-circle"></i> Hủy đơn hàng
+                </a>
+            }
+            <span class="fs-5">@Html.Raw(GetStatusBadge(currentStatus))</span>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <h6 class="card-title fw-bold mb-4 text-muted">
+                <i class="bi bi-clock-history me-2"></i> Tiến trình xử lý đơn hàng
+            </h6>
+
+            @if (currentStatus < 0)
+            {
+                <div class="alert alert-danger m-0 border-0" style="background-color: #fff5f5;">
+                    <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+                    Đơn hàng này đã bị <strong>@(currentStatus == -1 ? "hủy bỏ" : "từ chối")</strong> và không còn tiếp tục giao dịch.
+                </div>
+            }
+            else
+            {
+                <div class="stepper-wrapper">
+                    <div class="stepper-item @(currentStatus >= 1 ? "completed" : "")">
+                        <div class="step-counter"><i class="bi bi-receipt"></i></div>
+                        <div class="step-name">Đơn mới</div>
+                        <small class="text-muted" style="font-size: 11px;">@Model.OrderTime.ToString("dd/MM HH:mm")</small>
+                    </div>
+                    <div class="stepper-item @(currentStatus >= 2 ? "completed" : "")">
+                        <div class="step-counter"><i class="bi bi-box-seam"></i></div>
+                        <div class="step-name">Đã duyệt</div>
+                        <small class="text-muted" style="font-size: 11px;">@(Model.AcceptTime?.ToString("dd/MM HH:mm") ?? "...")</small>
+                    </div>
+                    <div class="stepper-item @(currentStatus >= 3 ? "completed" : "")">
+                        <div class="step-counter"><i class="bi bi-truck"></i></div>
+                        <div class="step-name">Đang giao</div>
+                        <small class="text-muted" style="font-size: 11px;">@(Model.ShippedTime?.ToString("dd/MM HH:mm") ?? "...")</small>
+                    </div>
+                    <div class="stepper-item @(currentStatus == 4 ? "completed" : "")">
+                        <div class="step-counter"><i class="bi bi-house-check"></i></div>
+                        <div class="step-name">Hoàn tất</div>
+                        <small class="text-muted" style="font-size: 11px;">@(Model.FinishedTime?.ToString("dd/MM HH:mm") ?? "...")</small>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body p-4">
+                    <h6 class="card-title fw-bold mb-4 text-muted">
+                        <i class="bi bi-cart-check me-2"></i> Sản phẩm đã mua
+                    </h6>
+
+                    <div class="table-responsive">
+                        <table class="table align-middle table-borderless">
+                            <thead class="border-bottom text-muted small">
+                                <tr>
+                                    <th scope="col" class="pb-3">Sản phẩm</th>
+                                    <th scope="col" class="pb-3 text-center">Số lượng</th>
+                                    <th scope="col" class="pb-3 text-end">Đơn giá</th>
+                                    <th scope="col" class="pb-3 text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (details != null && details.Any())
+                                {
+                                    foreach (var item in details)
+                                    {
+                                        <tr class="border-bottom">
+                                            <td class="py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="@adminImageBaseUrl@(string.IsNullOrEmpty(item.Photo) ? "no-image.jpg" : item.Photo)"
+                                                         class="rounded border bg-white p-1" style="width: 65px; height: 65px; object-fit: contain;"
+                                                         onerror="this.src='/images/no-image.jpg'" />
+
+                                                    <div class="ms-3">
+                                                        <h6 class="mb-1" style="font-size: 0.95rem;">@item.ProductName</h6>
+                                                        <small class="text-muted">ĐVT: @item.Unit</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 text-center">@item.Quantity</td>
+                                            <td class="py-3 text-end">@item.SalePrice.ToString("N0") đ</td>
+                                            <td class="py-3 text-end text-danger fw-semibold">@item.TotalPrice.ToString("N0") đ</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">Không có dữ liệu mặt hàng</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="d-flex flex-column gap-4 h-100">
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h6 class="card-title fw-bold mb-3 text-muted">
+                            <i class="bi bi-geo-alt me-2"></i> Giao hàng đến
+                        </h6>
+                        <div class="ps-3 border-start border-3 border-success">
+                            <p class="mb-1 fw-bold text-dark">Khách hàng: @Model.CustomerID</p>
+                            <p class="mb-0 text-muted small" style="line-height: 1.5;">Đ/c: @Model.DeliveryAddress, @Model.DeliveryProvince</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 flex-grow-1">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <h6 class="card-title fw-bold mb-3 text-muted">
+                            <i class="bi bi-wallet2 me-2"></i> Thanh toán
+                        </h6>
+
+                        <div class="d-flex justify-content-between mb-2 small">
+                            <span class="text-muted">Tổng tiền hàng</span>
+                            <span class="fw-semibold">@grandTotal.ToString("N0") đ</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-3 small">
+                            <span class="text-muted">Phí vận chuyển</span>
+                            <span class="text-success fw-semibold">Miễn phí</span>
+                        </div>
+
+                        <hr class="mt-auto mb-3" />
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Tổng cộng</span>
+                            <span class="fs-5 fw-bold text-danger">@grandTotal.ToString("N0") đ</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string GetStatusBadge(int status)
+    {
+        return status switch
+        {
+            1 => "<span class='badge bg-info text-dark px-3 py-2'>Đơn hàng mới</span>",
+            2 => "<span class='badge bg-primary px-3 py-2'>Đã duyệt</span>",
+            3 => "<span class='badge bg-warning text-dark px-3 py-2'>Đang giao hàng</span>",
+            4 => "<span class='badge bg-success px-3 py-2'>Đã hoàn tất</span>",
+            -1 => "<span class='badge bg-danger px-3 py-2'>Đã hủy</span>",
+            -2 => "<span class='badge bg-secondary px-3 py-2'>Bị từ chối</span>",
+            _ => "<span class='badge bg-light text-dark px-3 py-2'>Không xác định</span>"
+        };
+    }
+}

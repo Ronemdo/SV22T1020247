@@ -1,0 +1,35 @@
+﻿@model SV22T1020247.Models.Common.PagedResult<SV22T1020247.Models.Catalog.Product>
+@{
+    Layout = null;
+}
+
+@foreach (var item in Model.DataItems)
+{
+    <form class="border rounded p-2 mb-2" onsubmit="addCartItem(event,this)">
+       
+        <strong>@item.ProductName</strong>
+        <input type="hidden" name="ProductID" value="@item.ProductID" />
+        
+        <div class="row mt-2">
+            <div class="col-4">
+                <img src="~/images/products/@item.Photo"
+                        class="img-fluid border" />
+            </div>
+            <div class="col-8">
+                <input name="price" 
+                    class="form-control form-control-sm mb-1" 
+                    value="@item.Price" />
+                <input type="number" 
+                    name="Quantity" value="1" 
+                    class="form-control form-control-sm" />
+                <button class="btn btn-sm btn-primary mt-2 w-100">Thêm vào giỏ</button>
+            </div>
+        </div>
+    </form>
+}
+
+<div class="d-flex justify-content-between">
+    <button class="btn btn-sm" onclick="paginationSearch(event, document.getElementById('formSearchProduct'), @(Model.Page - 1))"> < </button>
+    <span>@Model.Page/@Model.PageCount</span>
+    <button class="btn btn-sm" onclick="paginationSearch(event, document.getElementById('formSearchProduct'), @(Model.Page + 1))"> > </button>
+</div>

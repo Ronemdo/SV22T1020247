@@ -1,0 +1,158 @@
+﻿@using SV22T1020247.BusinessLayers
+@using SV22T1020247.Models.Common
+@using Microsoft.AspNetCore.Http
+@using System.Text.Json
+@using SV22T1020247.Shop.Models
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var catInput = new PaginationSearchInput() { Page = 1, PageSize = 50, SearchValue = "" };
+    var catResult = await PartnerDataService.ListCategoriesAsync(catInput);
+    var categoryList = catResult.DataItems;
+    int cartCount = 0;
+
+    var sessionData = HttpContextAccessor.HttpContext?.Session.GetString("ShoppingCart");
+    if (!string.IsNullOrEmpty(sessionData))
+    {
+        var cart = JsonSerializer.Deserialize<List<CartItem>>(sessionData);
+        if (cart != null)
+        {
+            cartCount = cart.Sum(i => i.Quantity);
+        }
+    }
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Cửa Hàng Điện Tử</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <header class="sticky-top shadow-sm bg-white">
+        <nav class="navbar navbar-expand-lg navbar-light py-3">
+            <div class="container">
+                <a class="navbar-brand fw-bold text-danger fs-3 d-flex align-items-center" href="~/">
+                    <i class="bi bi-shop me-2"></i> NhatNam-Shop
+                </a>
+
+                <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarContent">
+
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-medium">
+                        <li class="nav-item">
+                            <a class="nav-link active text-danger" href="~/">Trang chủ</a>
+                        </li>
+                    </ul>
+
+                    <form class="d-flex mx-auto" style="min-width: 400px;" action="~/Home/Index" method="get">
+                        <div class="input-group shadow-sm rounded-pill overflow-hidden border border-danger">
+                            <input class="form-control border-0 shadow-none px-4" type="search" name="searchValue" placeholder="Hôm nay bạn cần tìm gì?">
+                            <button class="btn btn-danger px-4" type="submit"><i class="bi bi-search"></i></button>
+                        </div>
+                    </form>
+
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center mt-3 mt-lg-0">
+                        <li class="nav-item me-3">
+                            <a href="~/Cart" class="btn btn-light position-relative rounded-circle shadow-sm d-flex justify-content-center align-items-center p-0 nav-cart-btn" style="width: 45px; height: 45px;">
+                                <i class="bi bi-cart3 fs-5"></i>
+                                @if (cartCount > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light">
+                                        @cartCount
+                                    </span>
+                                }
+                            </a>
+                        </li>
+
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item dropdown ms-2">
+                                <a class="nav-link dropdown-toggle text-dark fw-bold d-flex align-items-center bg-light rounded-pill px-3 py-2 shadow-sm"
+                                   href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle fs-5 text-success me-2"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item py-2 dropdown-hover" href="~/Order/Index"><i class="bi bi-box-seam me-2 text-primary"></i> Lịch sử đơn hàng</a></li>
+                                    <li><a class="dropdown-item py-2 dropdown-hover" href="~/Account/Profile"><i class="bi bi-person-vcard me-2 text-info"></i>Quản lý hồ sơ</a></li>
+                                    <li><a class="dropdown-item py-2 dropdown-hover" href="~/Account/ChangePassword"><i class="bi bi-lock me-2 text-warning"></i> Đổi mật khẩu</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item py-2 text-danger fw-bold dropdown-hover" href="~/Account/Logout"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</a></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item ms-2">
+                                <a class="btn btn-danger px-4 rounded-pill shadow-sm" href="~/Account/Login">Đăng nhập</a>
+                            </li>
+                        }
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container my-4 flex-grow-1">
+        @RenderBody()
+    </main>
+
+    <footer class="bg-dark text-light pt-5 pb-3 mt-auto border-top border-4 border-danger">
+        <div class="container">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <h4 class="fw-bold text-white mb-3"><i class="bi bi-shop text-danger me-2"></i>NhatNam-Shop</h4>
+                    <p class="text-secondary pe-md-4">Hệ thống bán lẻ các thiết bị điện tử, đồ gia dụng và thời trang hàng đầu Việt Nam. Chất lượng làm nên uy tín.</p>
+                    <div class="d-flex gap-3 mt-3">
+                        <a href="#" class="text-secondary fs-4 footer-icon-hover"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-secondary fs-4 footer-icon-hover"><i class="bi bi-youtube text-danger"></i></a>
+                        <a href="#" class="text-secondary fs-4 footer-icon-hover"><i class="bi bi-tiktok"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold text-white mb-4">Liên hệ</h5>
+                    <ul class="list-unstyled text-secondary">
+                        <li class="mb-3"><i class="bi bi-geo-alt me-2 text-danger"></i> 77 Nguyễn Huệ, TP. Huế</li>
+                        <li class="mb-3"><i class="bi bi-telephone me-2 text-danger"></i> Hotline: 1900 1080</li>
+                        <li class="mb-3"><i class="bi bi-envelope me-2 text-danger"></i> cskh@svshop.vn</li>
+                        <li class="mb-3"><i class="bi bi-clock me-2 text-danger"></i> 8h - 22h (T2 - CN)</li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5 class="fw-bold text-white mb-4">Chính sách</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="footer-link">Chính sách bảo mật</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link">Chính sách đổi trả</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link">Chính sách bảo hành</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link">Điều khoản dịch vụ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold text-white mb-4">Đăng ký nhận tin</h5>
+                    <p class="text-secondary small">Nhận thông tin mã giảm giá mới nhất qua email.</p>
+                    <form class="d-flex mt-3 shadow-sm">
+                        <input type="email" class="form-control rounded-start bg-light border-0 px-3" placeholder="Email của bạn...">
+                        <button class="btn btn-danger rounded-end px-3" type="button"><i class="bi bi-send"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="border-top border-secondary pt-3 text-center text-secondary small">
+                &copy; 2026 Bản quyền thuộc về SV22T1020247
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,96 @@
+﻿@model SV22T1020247.Models.Partner.Supplier
+
+@{
+    ViewBag.Title = Model.SupplierID == 0 ? "Bổ sung nhà cung cấp" : "Cập nhật nhà cung cấp";
+}
+
+@section PageToolBar {
+    <button type="submit" form="formEdit" class="btn btn-primary">
+        <i class="bi bi-save"></i> Lưu dữ liệu
+    </button>
+    <a href="~/Supplier" class="btn btn-secondary ms-1">
+        <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+}
+
+<div class="row justify-content-center">
+    <div class="col-12">
+
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h5 class="card-title mb-0">@ViewBag.Title</h5>
+            </div>
+
+            <div class="card-body">
+                <form id="formEdit" method="post" asp-action="SaveData">
+
+                    @* ID ẩn *@
+                    @Html.HiddenFor(m => m.SupplierID)
+
+                    @* Hiển thị lỗi tổng *@
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Tên nhà cung cấp</label>
+                            @Html.TextBoxFor(m => m.SupplierName, new {
+                            @class = "form-control",
+                                                        placeholder = "Nhập tên nhà cung cấp...",
+                                                        autofocus = "autofocus"
+                                                        })
+                            @Html.ValidationMessageFor(m => m.SupplierName, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Tên giao dịch</label>
+                            @Html.TextBoxFor(m => m.ContactName, new {
+                                                        @class = "form-control",
+                                                        placeholder = "Tên người liên hệ..."
+                                                        })
+                            @Html.ValidationMessageFor(m => m.ContactName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label fw-bold">Điện thoại</label>
+                            @Html.TextBoxFor(m => m.Phone, new {
+                                                        @class = "form-control",
+                                                        placeholder = "Số điện thoại..."
+                                                        })
+                        </div>
+
+                        <div class="col-md-7 mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            @Html.TextBoxFor(m => m.Email, new {
+                                                        @class = "form-control",
+                                                        placeholder = "Email..."
+                                                        })
+                            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Địa chỉ</label>
+                        @Html.TextAreaFor(m => m.Address, new {
+                                                @class = "form-control",
+                                                rows = "3",
+                                                placeholder = "Địa chỉ..."
+                                                })
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tỉnh / Thành</label>
+                        <select class="form-select"
+                                asp-for="Province"
+                                asp-items="await SelectListHelper.Provinces()">
+                            <option value="">-- Chọn tỉnh / thành --</option>
+                        </select>
+                        <span asp-validation-for="Province" class="text-danger"></span>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

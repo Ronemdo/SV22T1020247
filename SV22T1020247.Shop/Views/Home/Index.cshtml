@@ -1,0 +1,194 @@
+﻿@model IEnumerable<SV22T1020247.Models.Catalog.Product>
+@{
+    ViewData["Title"] = "Trang chủ";
+    int currentPage = ViewBag.CurrentPage;
+    int pageCount = ViewBag.PageCount;
+    string searchValue = ViewBag.SearchValue;
+    string adminImageBaseUrl = "https://localhost:7219/images/products/";
+
+    int categoryId = ViewBag.CategoryID ?? 0;
+    decimal minPrice = ViewBag.MinPrice ?? 0;
+    decimal maxPrice = ViewBag.MaxPrice ?? 0;
+    string sortPrice = ViewBag.SortPrice ?? "";
+}
+
+<div class="bg-white p-3 rounded shadow-sm border mb-4">
+    <form action="~/Home/Index" method="get" id="filterForm">
+        <input type="hidden" name="searchValue" value="@searchValue" />
+
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="fw-bold text-uppercase d-flex align-items-center gap-2" style="font-size: 0.9rem; color: #555;">
+                <i class="bi bi-funnel text-danger"></i> Lọc & Sắp xếp:
+            </div>
+
+            <div style="min-width: 180px;">
+                <select name="categoryId" class="form-select form-select-sm border-secondary-subtle" onchange="document.getElementById('filterForm').submit();">
+                    <option value="0">Tất cả danh mục</option>
+                    @if (ViewBag.Categories != null)
+                    {
+                        foreach (var cat in ViewBag.Categories)
+                        {
+                            if (cat.CategoryID == categoryId)
+                            {
+                                <option value="@cat.CategoryID" selected>@cat.CategoryName</option>
+                            }
+                            else
+                            {
+                                <option value="@cat.CategoryID">@cat.CategoryName</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <input type="hidden" name="minPrice" id="minPrice" value="@(minPrice > 0 ? minPrice.ToString("0") : "")">
+                <input type="text" id="displayMinPrice" class="form-control form-control-sm border-secondary-subtle" style="width: 120px;" placeholder="Giá từ (đ)"
+                       value="@(minPrice > 0 ? minPrice.ToString("N0", new System.Globalization.CultureInfo("vi-VN")) : "")"
+                       oninput="formatCurrency(this, 'minPrice')">
+
+                <span class="text-muted">-</span>
+
+                <input type="hidden" name="maxPrice" id="maxPrice" value="@(maxPrice > 0 ? maxPrice.ToString("0") : "")">
+                <input type="text" id="displayMaxPrice" class="form-control form-control-sm border-secondary-subtle" style="width: 120px;" placeholder="Đến (đ)"
+                       value="@(maxPrice > 0 ? maxPrice.ToString("N0", new System.Globalization.CultureInfo("vi-VN")) : "")"
+                       oninput="formatCurrency(this, 'maxPrice')">
+            </div>
+
+            <div style="min-width: 160px;" class="ms-2 border-start ps-3">
+                <select name="sortPrice" class="form-select form-select-sm border-secondary-subtle text-primary fw-semibold" onchange="document.getElementById('filterForm').submit();">
+                    <option value="">Sắp xếp: Mặc định</option>
+                    <option value="asc" selected="@(sortPrice == "asc" ? "selected" : null)">Giá: Thấp đến Cao</option>
+                    <option value="desc" selected="@(sortPrice == "desc" ? "selected" : null)">Giá: Cao xuống Thấp</option>
+                </select>
+            </div>
+
+            <div class="ms-auto d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary px-4 fw-bold">Áp dụng</button>
+
+                @if (categoryId > 0 || minPrice > 0 || maxPrice > 0 || !string.IsNullOrEmpty(searchValue) || !string.IsNullOrEmpty(sortPrice))
+                {
+                    <a href="~/" class="btn btn-sm btn-light border text-danger" title="Xóa toàn bộ bộ lọc">
+                        <i class="bi bi-x-lg"></i> Bỏ lọc
+                    </a>
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    @if (!string.IsNullOrEmpty(searchValue) || categoryId > 0 || minPrice > 0 || maxPrice > 0 || !string.IsNullOrEmpty(sortPrice))
+    {
+        <h5 class="m-0 text-muted">
+            Kết quả
+            @(string.IsNullOrEmpty(searchValue) ? "" : $"cho \"{searchValue}\"")
+        </h5>
+    }
+    else
+    {
+        <h4 class="m-0 border-start border-4 border-danger ps-2">Sản phẩm <strong class="text-danger">Nổi Bật</strong></h4>
+    }
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+    @if (Model != null && Model.Any())
+    {
+        foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="@adminImageBaseUrl@(string.IsNullOrEmpty(item.Photo) ? "no-image.jpg" : item.Photo)"
+                         class="card-img-top"
+                         alt="@item.ProductName"
+                         style="height: 200px; object-fit: cover; padding: 10px;"
+                         onerror="this.onerror=null; this.src='/images/no-image.jpg';">
+
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title text-truncate" title="@item.ProductName">@item.ProductName</h6>
+                        <p class="card-text text-danger fw-bold mb-3">@item.Price.ToString("N0", new System.Globalization.CultureInfo("vi-VN")) đ</p>
+
+                        <div class="mt-auto d-flex justify-content-between">
+                            <a href="~/Home/Details/@item.ProductID" class="btn btn-outline-primary btn-sm px-3">Chi tiết</a>
+
+                            <button type="button"
+                                    class="btn btn-danger btn-sm px-3"
+                                    onclick="addToCart(@item.ProductID)">
+                                <i class="bi bi-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12 text-center py-5">
+            <h5 class="text-muted">Không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.</h5>
+        </div>
+    }
+</div>
+
+@if (pageCount > 1)
+{
+    // Đã thêm sortPrice vào link phân trang để khi sang trang 2 vẫn giữ nguyên sắp xếp
+    string filterQuery = $"searchValue={searchValue}&categoryId={categoryId}&minPrice={minPrice}&maxPrice={maxPrice}&sortPrice={sortPrice}";
+
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center flex-wrap">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="~/Home/Index?@filterQuery&page=@(currentPage - 1)">Trang trước</a>
+            </li>
+
+            @for (int p = 1; p <= pageCount; p++)
+            {
+                if (p == 1 || p == pageCount || (p >= currentPage - 2 && p <= currentPage + 2))
+                {
+                    <li class="page-item @(p == currentPage ? "active" : "")">
+                        <a class="page-link" href="~/Home/Index?@filterQuery&page=@p">@p</a>
+                    </li>
+                }
+                else if (p == currentPage - 3 || p == currentPage + 3)
+                {
+                    <li class="page-item disabled"><span class="page-link text-muted border-0 bg-transparent">...</span></li>
+                }
+            }
+
+            <li class="page-item @(currentPage == pageCount ? "disabled" : "")">
+                <a class="page-link" href="~/Home/Index?@filterQuery&page=@(currentPage + 1)">Trang sau</a>
+            </li>
+        </ul>
+    </nav>
+}
+
+@section Scripts {
+    <script>
+        // Hàm Thêm vào giỏ
+        function addToCart(id) {
+            $.ajax({
+                url: '/Cart/AddToCart',
+                type: 'POST',
+                data: { productId: id, quantity: 1 },
+                success: function (response) { location.reload(); },
+                error: function () { alert("Ối! Có lỗi xảy ra khi thêm vào giỏ hàng mất rồi."); }
+            });
+        }
+
+        // HÀM XỬ LÝ ĐỊNH DẠNG SỐ TIỀN CÓ DẤU CHẤM
+        function formatCurrency(input, hiddenInputId) {
+            // 1. Xóa tất cả các ký tự không phải là số (chữ cái, dấu chấm, phẩy...)
+            let value = input.value.replace(/\D/g, '');
+
+            // 2. Cập nhật giá trị vào input ẩn (value gửi về Server là số nguyên sạch)
+            document.getElementById(hiddenInputId).value = value;
+
+            // 3. Định dạng lại chuỗi và hiển thị ra input (Ví dụ: 1000000 -> 1.000.000)
+            if (value !== '') {
+                input.value = new Intl.NumberFormat('vi-VN').format(value);
+            } else {
+                input.value = '';
+            }
+        }
+    </script>
+}

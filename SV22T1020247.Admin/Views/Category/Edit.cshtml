@@ -1,0 +1,53 @@
+﻿@model SV22T1020247.Models.Catalog.Category
+
+@{
+    ViewBag.Title = Model.CategoryID == 0 ? "Bổ sung loại hàng" : "Cập nhật loại hàng";
+}
+
+@section PageToolBar {
+    <button type="submit" form="formEdit" class="btn btn-primary">
+        <i class="bi bi-save"></i> Lưu dữ liệu
+    </button>
+    <a href="~/Category" class="btn btn-secondary ms-1">
+        <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+}
+
+<div class="card card-primary card-outline">
+    <div class="card-header">
+        <h5 class="card-title mb-0">@ViewBag.Title</h5>
+    </div>
+
+    <div class="card-body">
+        <form id="formEdit" method="post" asp-action="SaveData">
+
+            @* ID ẩn *@
+            @Html.HiddenFor(m => m.CategoryID)
+
+            @* Lỗi tổng *@
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Tên loại hàng:</label>
+                @Html.TextBoxFor(m => m.CategoryName, new
+                {
+                    @class = "form-control",
+                                placeholder = "Ví dụ: Đồ gia dụng, Điện tử...",
+                                autofocus = "autofocus"
+                                })
+                @Html.ValidationMessageFor(m => m.CategoryName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Mô tả:</label>
+                @Html.TextAreaFor(m => m.Description, new
+                                {
+                    @class = "form-control",
+                                rows = "4",
+                                placeholder = "Mô tả chi tiết về nhóm hàng này..."
+                                })
+            </div>
+
+        </form>
+    </div>
+</div>
