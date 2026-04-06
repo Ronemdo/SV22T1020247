@@ -6,12 +6,9 @@ using SV22T1020247.BusinessLayers;
 using SV22T1020247.Models.Common;
 using SV22T1020247.Models.Partner;
 
-
 namespace SV22T1020247.Admin.Controllers
 {
-
     [Authorize(Roles = "customer,admin")]
-
     public class CustomerController : Controller
     {
         /// <summary>
@@ -23,10 +20,9 @@ namespace SV22T1020247.Admin.Controllers
         /// Nhập đầu vào tìm kiếm, hiển thị kết quả tìm kiếm khách hàng
         /// </summary>
         /// <returns></returns>
-
         public IActionResult Index()
         {
-            var input = ApplicationContext.GetSessionData<PaginationSearchInput>("CustomerSearchInput");
+            var input = ApplicationContext.GetSessionData<PaginationSearchInput>(CUSTOMER_SEARCH);
             if (input == null)
                 input = new PaginationSearchInput()
                 {
@@ -44,7 +40,7 @@ namespace SV22T1020247.Admin.Controllers
         public async Task<IActionResult> Search(PaginationSearchInput input)
         {
             var result = await PartnerDataService.ListCustomersAsync(input);
-            ApplicationContext.SetSessionData("CustomerSearchInput", input);
+            ApplicationContext.SetSessionData(CUSTOMER_SEARCH, input);
             return View(result);
         }
 
@@ -61,6 +57,7 @@ namespace SV22T1020247.Admin.Controllers
             };
             return View("Edit", model);
         }
+
         /// <summary>
         /// Cập nhật thông tin khách hàng
         /// </summary>
@@ -76,22 +73,20 @@ namespace SV22T1020247.Admin.Controllers
         }
 
         [HttpPost]
-
         public async Task<IActionResult> SaveData(Customer data)
         {
             try
             {
-                ViewBag.Title = data.CustomerID == 0 ? "Bo sung khach hang" : "Cap nhat thong tin khach hang";
-                //TODO:kiem tra tinh hop le cua du lieu va thong bao loi neu du lieu khong hop le
-                //Su dung ModelSate để lưu các tình huống lỗi và thông báo lỗi cho người dùng trên view 
+                ViewBag.Title = data.CustomerID == 0 ? "Bổ sung khách hàng" : "Cập nhật thông tin khách hàng";
                 if (string.IsNullOrWhiteSpace(data.CustomerName))
-                    ModelState.AddModelError(nameof(data.CustomerName), "Vui long nhap ten khach hang");
+                    ModelState.AddModelError(nameof(data.CustomerName), "Vui lòng nhập tên khách hàng");
                 if (string.IsNullOrWhiteSpace(data.Email))
-                    ModelState.AddModelError(nameof(data.Email), "Email khong duoc de trong");
+                    ModelState.AddModelError(nameof(data.Email), "Email không được để trống");
                 else if (!(await PartnerDataService.ValidatelCustomerEmailAsync(data.Email, data.CustomerID)))
-                    ModelState.AddModelError(nameof(data.Email), "Email nay bị trung");
+                    ModelState.AddModelError(nameof(data.Email), "Email đã tồn tại");
                 if (string.IsNullOrWhiteSpace(data.Province))
-                    ModelState.AddModelError(nameof(data.Province), "Vui long chon tinh/thanh");
+                    ModelState.AddModelError(nameof(data.Province), "Vui lòng chọn tỉnh/thành");
+
                 if (!ModelState.IsValid)
                 {
                     return View("Edit", data);
@@ -102,7 +97,6 @@ namespace SV22T1020247.Admin.Controllers
                 if (string.IsNullOrEmpty(data.Phone)) data.Phone = "";
                 if (string.IsNullOrEmpty(data.Address)) data.Address = "";
 
-                
                 //Yeu cau luu du lieu vao CSDL 
                 if (data.CustomerID == 0)
                 {
@@ -117,11 +111,10 @@ namespace SV22T1020247.Admin.Controllers
             catch (Exception)
             {
                 //ghi log loi dua vao thong tin trong Exception(ex.Message,ex.StackTrace
-                ModelState.AddModelError("Error", "He thong dang ban,vui long thu lai sau");
+                ModelState.AddModelError("Error", "Hệ thống đang bận, Vui lòng thử lại sau");
                 return View("Edit", data);
             }
         }
-
 
         /// <summary>
         /// Xóa khách hàng
@@ -145,17 +138,81 @@ namespace SV22T1020247.Admin.Controllers
 
             return View(model);
         }
+
         /// <summary>
-        /// Đổi mật khẩu tài khoảng khách hàng
+        /// Hiển thị giao diện đổi mật khẩu tài khoản khách hàng
         /// </summary>
-        /// <param name="id">Mã khách hàng</param>
-        /// <returns></returns>
-        public IActionResult ChangePassword(int id)
+        [HttpGet]
+        public async Task<IActionResult> ChangePassword(int id)
         {
             ViewData["Title"] = "Đổi mật khẩu khách hàng";
-            ViewData["CustomerId"] = id;
 
-            return View("~/Views/Account/ChangePassword.cshtml");
+            // Lấy thông tin khách hàng để hiển thị lên form
+            var model = await PartnerDataService.GetCustomerAsync(id);
+            if (model == null)
+                return RedirectToAction("Index");
+
+            // Trả về đúng View của Customer
+            return View(model);
+        }
+
+        /// <summary>
+        /// Xử lý cập nhật mật khẩu khách hàng
+        /// </summary>
+        [HttpPost]
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(int customerId, string newPassword, string confirmPassword)
+        {
+            // Kiểm tra tính hợp lệ
+            if (string.IsNullOrWhiteSpace(newPassword))
+                ModelState.AddModelError("newPassword", "Vui lòng nhập mật khẩu mới");
+            if (newPassword != confirmPassword)
+                ModelState.AddModelError("confirmPassword", "Mật khẩu xác nhận không trùng khớp");
+
+            if (!ModelState.IsValid)
+            {
+                // Nếu có lỗi, load lại thông tin khách hàng và trả về View hiển thị lỗi
+                var model = await PartnerDataService.GetCustomerAsync(customerId);
+                return View(model);
+            }
+
+            try
+            {
+                // 1. Lấy thông tin khách hàng hiện tại từ CSDL
+                var customer = await PartnerDataService.GetCustomerAsync(customerId);
+                if (customer == null)
+                    return RedirectToAction("Index");
+
+                // 2. Mã hóa mật khẩu mới bằng hàm EncodeMD5 (đảm bảo giống 100% bên Shop)
+                customer.Password = EncodeMD5(newPassword);
+
+                // 3. Cập nhật khách hàng với mật khẩu đã mã hóa
+                await PartnerDataService.UpdateCustomerAsync(customer);
+
+                TempData["Message"] = "Đổi mật khẩu khách hàng thành công!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("Error", "Hệ thống đang bận, Vui lòng thử lại sau");
+                var model = await PartnerDataService.GetCustomerAsync(customerId);
+                return View(model);
+            }
+        }
+
+        /// <summary>
+        /// Hàm mã hóa MD5 (Copy từ bên Shop sang để đồng bộ chuẩn mã hóa)
+        /// </summary>
+        private string EncodeMD5(string pass)
+        {
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] inputBytes = System.Text.Encoding.UTF8.GetBytes(pass);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++) sb.Append(hashBytes[i].ToString("x2"));
+                return sb.ToString();
+            }
         }
     }
 }
