@@ -1,16 +1,11 @@
-﻿        using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SV22T1020247.BusinessLayers;
 using SV22T1020247.Shop.Models;
-using System.Collections.Generic;
-using System.Linq;
+using SV22T1020247.Shop; 
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace SV22T1020247.Web.Controllers
 {
@@ -32,7 +27,8 @@ namespace SV22T1020247.Web.Controllers
                 return View();
             }
 
-            string encryptedPassword = EncodeMD5(password);
+            // GỌI HÀM TỪ CRYPTHELPER
+            string encryptedPassword = CryptHelper.HashMD5(password);
 
             var searchInput = new Models.Common.PaginationSearchInput() { Page = 1, PageSize = 10, SearchValue = email.Trim() };
             var customersResult = await PartnerDataService.ListCustomersAsync(searchInput);
@@ -41,7 +37,7 @@ namespace SV22T1020247.Web.Controllers
                 !string.IsNullOrEmpty(c.Email) &&
                 c.Email.Trim().ToLower() == email.Trim().ToLower() &&
                 !string.IsNullOrEmpty(c.Password) &&
-                c.Password.Trim() == encryptedPassword);
+                c.Password.Trim() == encryptedPassword); // SO SÁNH VỚI PASS ĐÃ MÃ HÓA
 
             if (customer != null)
             {
@@ -88,7 +84,6 @@ namespace SV22T1020247.Web.Controllers
                 string finalCartJson = JsonSerializer.Serialize(currentCart);
                 HttpContext.Session.SetString("ShoppingCart", finalCartJson);
                 Response.Cookies.Append(cookieName, finalCartJson, new CookieOptions { Expires = DateTime.Now.AddDays(30) });
-                // ----------------------------------------------------
 
                 return RedirectToAction("Index", "Home");
             }
@@ -151,13 +146,13 @@ namespace SV22T1020247.Web.Controllers
             var newCustomer = new Models.Partner.Customer()
             {
                 CustomerName = customerName.Trim(),
-                ContactName = customerName.Trim(), 
+                ContactName = customerName.Trim(),
                 Email = email,
                 Phone = (phone ?? "").Trim(),
                 Address = (address ?? "").Trim(),
                 Province = province,
                 IsLocked = false,
-                Password = EncodeMD5(password)
+                Password = CryptHelper.HashMD5(password) // GỌI HÀM TỪ CRYPTHELPER
             };
             int result = await PartnerDataService.AddCustomerAsync(newCustomer);
             if (result > 0)
@@ -168,6 +163,7 @@ namespace SV22T1020247.Web.Controllers
             ViewBag.Provinces = await DictionaryDataService.ListProvincesAsync();
             return View();
         }
+
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -225,28 +221,20 @@ namespace SV22T1020247.Web.Controllers
 
             var customer = await PartnerDataService.GetCustomerAsync(int.Parse(userId));
             if (customer == null) return RedirectToAction("Login");
-            if (customer.Password?.Trim() != EncodeMD5(oldPassword ?? ""))
+
+            // GỌI HÀM TỪ CRYPTHELPER KIỂM TRA PASS CŨ
+            if (customer.Password?.Trim() != CryptHelper.HashMD5(oldPassword ?? ""))
             {
                 ModelState.AddModelError("", "Mật khẩu cũ không chính xác!");
                 return View();
             }
-            customer.Password = EncodeMD5(newPassword ?? "");
+
+            // GỌI HÀM TỪ CRYPTHELPER CẬP NHẬT PASS MỚI
+            customer.Password = CryptHelper.HashMD5(newPassword ?? "");
             await PartnerDataService.UpdateCustomerAsync(customer);
 
             TempData["Message"] = "Đổi mật khẩu thành công!";
             return RedirectToAction("Profile");
-        }
-
-        private string EncodeMD5(string pass)
-        {
-            using (MD5 md5 = MD5.Create())
-            {
-                byte[] inputBytes = Encoding.UTF8.GetBytes(pass);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < hashBytes.Length; i++) sb.Append(hashBytes[i].ToString("x2"));
-                return sb.ToString();
-            }
         }
     }
 }

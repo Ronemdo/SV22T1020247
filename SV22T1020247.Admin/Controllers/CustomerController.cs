@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using SV22T1020247.Admin;
-using SV22T1020247.BusinessLayers;
 using SV22T1020247.Models.Common;
 using SV22T1020247.Models.Partner;
+using SV22T1020247.Admin;
 
 namespace SV22T1020247.Admin.Controllers
 {
@@ -140,30 +138,22 @@ namespace SV22T1020247.Admin.Controllers
         }
 
         /// <summary>
-        /// Hiển thị giao diện đổi mật khẩu tài khoản khách hàng
+        /// Xử lý cập nhật mật khẩu khách hàng
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> ChangePassword(int id)
         {
-            ViewData["Title"] = "Đổi mật khẩu khách hàng";
-
-            // Lấy thông tin khách hàng để hiển thị lên form
+            // Lấy thông tin khách hàng để hiển thị (ví dụ: tên, email, id)
             var model = await PartnerDataService.GetCustomerAsync(id);
             if (model == null)
                 return RedirectToAction("Index");
 
-            // Trả về đúng View của Customer
             return View(model);
         }
-
-        /// <summary>
-        /// Xử lý cập nhật mật khẩu khách hàng
-        /// </summary>
-        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> ChangePassword(int customerId, string newPassword, string confirmPassword)
         {
-            // Kiểm tra tính hợp lệ
+            // 1. Kiểm tra tính hợp lệ
             if (string.IsNullOrWhiteSpace(newPassword))
                 ModelState.AddModelError("newPassword", "Vui lòng nhập mật khẩu mới");
             if (newPassword != confirmPassword)
@@ -178,15 +168,15 @@ namespace SV22T1020247.Admin.Controllers
 
             try
             {
-                // 1. Lấy thông tin khách hàng hiện tại từ CSDL
+                // 2. Lấy thông tin khách hàng hiện tại từ CSDL
                 var customer = await PartnerDataService.GetCustomerAsync(customerId);
                 if (customer == null)
                     return RedirectToAction("Index");
 
-                // 2. Mã hóa mật khẩu mới bằng hàm EncodeMD5 (đảm bảo giống 100% bên Shop)
-                customer.Password = EncodeMD5(newPassword);
+                // 3. Mã hóa mật khẩu mới bằng CryptHelper (Sử dụng chung với toàn hệ thống)
+                customer.Password = CryptHelper.HashMD5(newPassword);
 
-                // 3. Cập nhật khách hàng với mật khẩu đã mã hóa
+                // 4. Cập nhật khách hàng với mật khẩu đã mã hóa
                 await PartnerDataService.UpdateCustomerAsync(customer);
 
                 TempData["Message"] = "Đổi mật khẩu khách hàng thành công!";
@@ -197,21 +187,6 @@ namespace SV22T1020247.Admin.Controllers
                 ModelState.AddModelError("Error", "Hệ thống đang bận, Vui lòng thử lại sau");
                 var model = await PartnerDataService.GetCustomerAsync(customerId);
                 return View(model);
-            }
-        }
-
-        /// <summary>
-        /// Hàm mã hóa MD5 (Copy từ bên Shop sang để đồng bộ chuẩn mã hóa)
-        /// </summary>
-        private string EncodeMD5(string pass)
-        {
-            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
-            {
-                byte[] inputBytes = System.Text.Encoding.UTF8.GetBytes(pass);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
-                System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                for (int i = 0; i < hashBytes.Length; i++) sb.Append(hashBytes[i].ToString("x2"));
-                return sb.ToString();
             }
         }
     }

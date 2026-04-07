@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SV22T1020247.Admin;
 using SV22T1020247.BusinessLayers;
 using SV22T1020247.Models.Common;
 using SV22T1020247.Models.HR;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace SV22T1020247.Admin.Controllers
 {
@@ -18,9 +13,10 @@ namespace SV22T1020247.Admin.Controllers
         /// Hiển thị danh sách nhân viên
         /// </summary>
         /// <returns></returns>
+        private const string EMPLOYEE_SEARCH = "EmployeeSearchInput";
         public IActionResult Index()
-        {
-            var input = ApplicationContext.GetSessionData<PaginationSearchInput>("EmployeeSearchInput");
+        {   
+            var input = ApplicationContext.GetSessionData<PaginationSearchInput>(EMPLOYEE_SEARCH);
             if (input == null)
                 input = new PaginationSearchInput()
                 {
@@ -38,7 +34,7 @@ namespace SV22T1020247.Admin.Controllers
         public async Task<IActionResult> Search(PaginationSearchInput input)
         {
             var result = await HRDataService.ListEmployeesAsync(input);
-            ApplicationContext.SetSessionData("EmployeeSearchInput", input);
+            ApplicationContext.SetSessionData(EMPLOYEE_SEARCH, input);
             return View(result);
         }
 
@@ -158,7 +154,6 @@ namespace SV22T1020247.Admin.Controllers
         /// <returns></returns>
         public async Task<IActionResult> ChangePassword(int id, string newPassword, string confirmPassword)
         {
-            // Lấy lại thông tin nhân viên lỡ có lỗi thì còn có cục Data ném về lại View
             var employee = await HRDataService.GetEmployeeAsync(id);
             if (employee == null) return RedirectToAction("Index");
 
