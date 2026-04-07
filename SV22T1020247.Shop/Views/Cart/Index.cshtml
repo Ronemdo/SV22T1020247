@@ -1,6 +1,5 @@
 ﻿@model IEnumerable<SV22T1020247.Shop.Models.CartItem>
 @{
-
     ViewData["Title"] = "Giỏ hàng của bạn";
     string adminImageBaseUrl = "https://localhost:7219/images/products/";
     decimal totalCart = 0;
@@ -46,18 +45,19 @@
                                             <form action="~/Cart/UpdateCart" method="post" class="input-group input-group-sm">
                                                 <input type="hidden" name="productId" value="@item.ProductID" />
                                                 <input type="number" name="quantity" class="form-control text-center"
-                                                       value="@item.Quantity" min="1" onchange="this.form.submit()">
+                                                       value="@item.Quantity" min="0" onchange="this.form.submit()">
                                             </form>
                                         </td>
                                         <td class="text-end fw-bold text-danger">
                                             @item.TotalPrice.ToString("N0") đ
                                         </td>
                                         <td class="text-center pe-4">
-                                            <a href="~/Cart/RemoveFromCart/@item.ProductID"
-                                               class="text-muted"
-                                               onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
+                                            <button type="button" class="btn btn-link text-danger p-0" title="Xóa sản phẩm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteItemModal"
+                                                    data-id="@item.ProductID">
+                                                <i class="bi bi-trash fs-5"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 }
@@ -66,9 +66,15 @@
                     </div>
                 </div>
 
-                <a href="~/" class="btn btn-link text-decoration-none p-0 text-dark">
-                    <i class="bi bi-arrow-left"></i> Tiếp tục mua hàng
-                </a>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <a href="~/" class="btn btn-link text-decoration-none p-0 text-dark">
+                        <i class="bi bi-arrow-left"></i> Tiếp tục mua hàng
+                    </a>
+
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#clearCartModal">
+                        <i class="bi bi-trash"></i> Xóa toàn bộ giỏ hàng
+                    </button>
+                </div>
             </div>
 
             <div class="col-lg-4">
@@ -107,3 +113,60 @@
         </div>
     }
 </div>
+
+<div class="modal fade" id="deleteItemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+            <div class="modal-header bg-warning border-0">
+                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-exclamation-triangle"></i> Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="~/Cart/RemoveFromCart" method="post">
+                <div class="modal-body p-4 text-center">
+                    <input type="hidden" name="id" id="deleteProductId" value="" />
+                    <p class="mb-0 fs-5">Bạn có chắc chắn muốn bỏ sản phẩm này khỏi giỏ hàng?</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 6px;">Không</button>
+                    <button type="submit" class="btn btn-danger px-4" style="border-radius: 6px;">Có, xóa đi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="clearCartModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+            <div class="modal-header bg-danger border-0 text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon"></i> Cảnh báo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="~/Cart/ClearCart" method="post">
+                <div class="modal-body p-4 text-center">
+                    <p class="mb-0 fs-5">Bạn có chắc chắn muốn xóa <strong>tất cả</strong> sản phẩm khỏi giỏ hàng không?</p>
+                    <p class="text-muted mt-2 mb-0" style="font-size: 14px;">Hành động này không thể hoàn tác.</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 6px;">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-danger px-4" style="border-radius: 6px;">Đồng ý xóa sạch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Script truyền ID cho Modal xóa 1 sản phẩm
+        var deleteItemModal = document.getElementById('deleteItemModal');
+        if (deleteItemModal) {
+            deleteItemModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var productId = button.getAttribute('data-id');
+                var inputId = deleteItemModal.querySelector('#deleteProductId');
+                inputId.value = productId;
+            });
+        }
+    </script>
+}

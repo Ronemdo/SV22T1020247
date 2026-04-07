@@ -18,6 +18,7 @@ namespace SV22T1020247.Shop.Controllers
             }
             return new List<CartItem>();
         }
+
         private void SaveShoppingCart(List<CartItem> cart)
         {
             string jsonCart = JsonSerializer.Serialize(cart);
@@ -75,10 +76,15 @@ namespace SV22T1020247.Shop.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// POST: Xử lý hành động xóa 1 mặt hàng từ Modal
+        /// </summary>
+        [HttpPost]
         public IActionResult RemoveFromCart(int id)
         {
             var cart = GetShoppingCart();
             var item = cart.FirstOrDefault(c => c.ProductID == id);
+
             if (item != null)
             {
                 cart.Remove(item);
@@ -87,24 +93,35 @@ namespace SV22T1020247.Shop.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// POST: Cập nhật số lượng giỏ hàng
+        /// </summary>
         [HttpPost]
         public IActionResult UpdateCart(int productId, int quantity)
         {
-            if (quantity <= 0)
-            {
-                return RedirectToAction("RemoveFromCart", new { id = productId });
-            }
-
             var cart = GetShoppingCart();
             var item = cart.FirstOrDefault(c => c.ProductID == productId);
+
             if (item != null)
             {
-                item.Quantity = quantity;
+                // Nếu số lượng <= 0 thì tự động xóa khỏi giỏ
+                if (quantity <= 0)
+                {
+                    cart.Remove(item);
+                }
+                else
+                {
+                    item.Quantity = quantity;
+                }
                 SaveShoppingCart(cart);
             }
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// POST: Xử lý hành động xóa toàn bộ giỏ hàng từ Modal
+        /// </summary>
+        [HttpPost]
         public IActionResult ClearCart()
         {
             ClearSavedCart();

@@ -6,12 +6,6 @@ using SV22T1020247.BusinessLayers;
 using SV22T1020247.Models.Catalog;
 using SV22T1020247.Models.Common;
 using SV22T1020247.Models.Sales;
-using SV22T1020247.Admin.AppCodes;
-using SV22T1020247.BusinessLayers;
-using SV22T1020247.Models.Catalog;
-using SV22T1020247.Models.Common;
-using SV22T1020247.Models.Sales;
-
 namespace SV22T1020247.Admin.Controllers
 {
     [Authorize(Roles = "sale,admin")]
@@ -42,7 +36,7 @@ namespace SV22T1020247.Admin.Controllers
         }
 
         /// <summary>
-        /// Tìm kiếm và hiển thị danh sách đơn hàng (AJAX)
+        /// Tìm kiếm và hiển thị danh sách đơn hàng
         /// </summary>
         public async Task<IActionResult> Search(OrderSearchInput input)
         {
@@ -101,7 +95,7 @@ namespace SV22T1020247.Admin.Controllers
             if (string.IsNullOrWhiteSpace(address))
                 return Json(new ApiResult(0, "Vui lòng nhập địa chỉ giao hàng"));
 
-            // Gọi Service lập đơn (customerID = 0 sẽ được xử lý thành null trong Service)
+         
             int orderID = await SalesDataService.AddOrderAsync(customerID, province, address);
 
             foreach (var item in cart)
@@ -336,7 +330,7 @@ namespace SV22T1020247.Admin.Controllers
         public async Task<IActionResult> Finish(int id = 0)
         {
             var order = await SalesDataService.GetOrderAsync(id);
-            // SỬA Ở ĐÂY: Thêm (int)
+       
             if (order == null || (int)order.Status != 3)
                 return Content("Đơn hàng chưa được giao, không thể hoàn tất!");
 

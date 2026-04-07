@@ -84,16 +84,12 @@ namespace SV22T1020247.Admin.Controllers
             {
                 ViewBag.Title = data.ShipperID == 0 ? "Bổ sung người giao hàng" : "Cập nhật thông tin người giao hàng";
 
-                //TODO: Kiểm tra tính hợp lệ của dữ liệu và thông báo lỗi nếu dữ liệu không hợp lệ
-                //Sử dụng ModelState để kiểm soát thông báo lỗi và gửi thông báo lỗi cho View
-
                 if (string.IsNullOrWhiteSpace(data.ShipperName))
                     ModelState.AddModelError(nameof(data.ShipperName), "Vui lòng nhập tên người giao hàng");
 
                 if (string.IsNullOrWhiteSpace(data.Phone))
                     ModelState.AddModelError(nameof(data.Phone), "Vui lòng cho biết số điện thoại của người giao hàng");
 
-                // Điều chỉnh lại các giá trị dữ liệu khác theo qui định/qui ước của App
                 if (string.IsNullOrEmpty(data.Phone)) data.Phone = "";
 
                 if (!ModelState.IsValid)
@@ -101,7 +97,6 @@ namespace SV22T1020247.Admin.Controllers
                     return View("Edit", data);
                 }
 
-                //Yêu cầu lưu dữ liệu vào CSDL
                 if (data.ShipperID == 0)
                 {
                     await PartnerDataService.AddShipperAsync(data);
@@ -114,7 +109,6 @@ namespace SV22T1020247.Admin.Controllers
             }
             catch (Exception)
             {
-                //Lưu log lỗi trong ex
                 ModelState.AddModelError("Error", "Hệ thống đang bận, vui lòng thử lại sau");
                 return View("Edit", data);
             }

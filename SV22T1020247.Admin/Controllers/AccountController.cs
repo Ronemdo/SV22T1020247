@@ -88,7 +88,6 @@ namespace SV22T1020247.Admin.Controllers
         [HttpPost]
         public IActionResult ChangePassword(string oldPassword, string newPassword, string confirmPassword)
         {
-            // 1. Kiểm tra dữ liệu rỗng
             if (string.IsNullOrWhiteSpace(oldPassword) ||
                 string.IsNullOrWhiteSpace(newPassword) ||
                 string.IsNullOrWhiteSpace(confirmPassword))
@@ -97,32 +96,25 @@ namespace SV22T1020247.Admin.Controllers
                 return View();
             }
 
-            // 2. Kiểm tra mật khẩu mới và xác nhận có khớp không
             if (newPassword != confirmPassword)
             {
                 ModelState.AddModelError("Error", "Mật khẩu xác nhận không khớp với mật khẩu mới!");
                 return View();
             }
 
-            // 3. Lấy tên đăng nhập (Email) của người dùng đang đăng nhập
-            // Trong pattern của bạn, hàm GetUserData() thường được mở rộng để lấy thông tin session
             string userName = User.GetUserData()?.UserName ?? "";
 
-            // 4. Mã hóa mật khẩu cũ và mới để so sánh/lưu vào database
             string hashedOldPassword = CryptHelper.HashMD5(oldPassword);
             string hashedNewPassword = CryptHelper.HashMD5(newPassword);
 
-            // 5. Gọi Service thực hiện đổi
             bool result = SecurityDataService.ChangePassword(userName, hashedOldPassword, hashedNewPassword);
 
-            // 6. Xử lý kết quả trả về
             if (!result)
             {
                 ModelState.AddModelError("Error", "Mật khẩu cũ không chính xác!");
                 return View();
             }
 
-            // Đổi mật khẩu thành công thì bắt đăng xuất để đăng nhập lại
             return RedirectToAction("Logout");
         }
 

@@ -69,7 +69,6 @@ namespace SV22T1020247.Admin.Controllers
             }
             catch
             {
-                // Đã bỏ biến 'ex' dư thừa ở đây
                 ModelState.AddModelError(string.Empty, "Lỗi hệ thống, vui lòng thử lại sau.");
                 return View("Edit", data);
             }

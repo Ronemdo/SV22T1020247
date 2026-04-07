@@ -50,7 +50,7 @@ namespace SV22T1020247.Admin.Controllers
                 EmployeeID = 0,
                 IsWorking = true
             };
-            return View("Edit", model); // Dùng chung View Edit
+            return View("Edit", model); 
         }
 
         /// <summary>
@@ -101,7 +101,6 @@ namespace SV22T1020247.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> ChangeRole(int id)
         {
-            // 1. Lấy thông tin nhân viên từ Database
             var model = await HRDataService.GetEmployeeAsync(id);
             if (model == null)
                 return RedirectToAction("Index");
@@ -113,7 +112,6 @@ namespace SV22T1020247.Admin.Controllers
     new { RoleName = "admin", Description = "Quản trị hệ thống" }
 };
 
-            // Truyền dữ liệu nhân viên sang View
             return View(model);
         }
 
@@ -123,24 +121,18 @@ namespace SV22T1020247.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangeRole(int id, List<string> selectedRoles)
         {
-            // Lấy lại thông tin nhân viên cũ
             var employee = await HRDataService.GetEmployeeAsync(id);
             if (employee == null)
                 return RedirectToAction("Index");
 
-            // selectedRoles tự động nhận danh sách các checkbox được tích (ví dụ: ["Quản lý khách hàng", "Quản lý mặt hàng"])
-            // Ta nối chúng lại thành 1 chuỗi cách nhau bởi dấu phẩy
             string roleNames = selectedRoles != null && selectedRoles.Count > 0
                                ? string.Join(",", selectedRoles)
                                : "";
 
-            // Cập nhật thuộc tính RoleNames của nhân viên
             employee.RoleNames = roleNames;
 
-            // Gọi hàm cập nhật lại thông tin nhân viên xuống Database
             await HRDataService.UpdateEmployeeAsync(employee);
 
-            // Xong xuôi thì đá về trang danh sách
             TempData["Message"] = "Đã cập nhật phân quyền thành công!";
             return RedirectToAction("Index");
         }
@@ -155,7 +147,6 @@ namespace SV22T1020247.Admin.Controllers
             var employee = await HRDataService.GetEmployeeAsync(id);
             if (employee == null) return RedirectToAction("Index");
 
-            // 1. Kiểm tra đầu vào
             if (string.IsNullOrWhiteSpace(newPassword) || string.IsNullOrWhiteSpace(confirmPassword))
             {
                 ModelState.AddModelError("Error", "Vui lòng nhập đầy đủ mật khẩu mới và xác nhận!");
@@ -167,11 +158,8 @@ namespace SV22T1020247.Admin.Controllers
                 ModelState.AddModelError("Error", "Mật khẩu xác nhận không khớp!");
                 return View(employee);
             }
-
-            // 2. Mã hóa mật khẩu mới (Gọi hàm HashMD5 từ class CryptHelper của bạn)
             string hashedNewPassword = CryptHelper.HashMD5(newPassword);
 
-            // 3. Gọi Service cập nhật mật khẩu (Hàm này bạn đã tạo ở SecurityDataService)
             bool result = SecurityDataService.ResetPassword(id.ToString(), hashedNewPassword);
 
             if (!result)
@@ -180,7 +168,6 @@ namespace SV22T1020247.Admin.Controllers
                 return View(employee);
             }
 
-            // Đổi thành công thì báo thông điệp và quay về danh sách
             TempData["Message"] = "Đã cấp lại mật khẩu thành công!";
             return RedirectToAction("Index");
         }
@@ -198,7 +185,6 @@ namespace SV22T1020247.Admin.Controllers
             {
                 ViewBag.Title = data.EmployeeID == 0 ? "Bổ sung nhân viên" : "Cập nhật thông tin nhân viên";
 
-                // Kiểm tra dữ liệu đầu vào: FullName và Email là bắt buộc, Email chưa được sử dụng
                 if (string.IsNullOrWhiteSpace(data.FullName))
                     ModelState.AddModelError(nameof(data.FullName), "Vui lòng nhập họ tên nhân viên");
 
@@ -210,7 +196,6 @@ namespace SV22T1020247.Admin.Controllers
                 if (!ModelState.IsValid)
                     return View("Edit", data);
 
-                // Xử lý upload ảnh
                 if (uploadPhoto != null)
                 {
                     var folder = Path.Combine(ApplicationContext.WWWRootPath, "images/employees");
@@ -227,23 +212,20 @@ namespace SV22T1020247.Admin.Controllers
                     }
                     data.Photo = fileName;
                 }
-
-                // Tiền xử lý dữ liệu trước khi lưu vào database
                 if (string.IsNullOrEmpty(data.Address)) data.Address = "";
                 if (string.IsNullOrEmpty(data.Phone)) data.Phone = "";
                 if (string.IsNullOrEmpty(data.Photo)) data.Photo = "nophoto.png";
 
-                // Lưu dữ liệu vào database (bổ sung hoặc cập nhật)
+              
                 if (data.EmployeeID == 0)
-                    await HRDataService.AddEmployeeAsync(data); // Thêm mới
+                    await HRDataService.AddEmployeeAsync(data); 
                 else
-                    await HRDataService.UpdateEmployeeAsync(data); // Cập nhật
+                    await HRDataService.UpdateEmployeeAsync(data);
 
                 return RedirectToAction("Index");
             }
             catch // (Exception ex)
             {
-                // TODO: Ghi log lỗi căn cứ vào ex.Message và ex.StackTrace
                 ModelState.AddModelError(string.Empty, "Hệ thống đang bận hoặc dữ liệu không hợp lệ. Vui lòng kiểm tra dữ liệu hoặc thử lại sau");
                 return View("Edit", data);
             }

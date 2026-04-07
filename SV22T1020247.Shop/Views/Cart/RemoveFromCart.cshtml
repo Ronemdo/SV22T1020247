@@ -1,0 +1,42 @@
+﻿@model SV22T1020247.Shop.Models.CartItem
+@{
+    ViewBag.Title = "Xác nhận xóa sản phẩm";
+    string adminImageBaseUrl = "https://localhost:7219/images/products/";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-warning">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h4 class="mb-0"><i class="bi bi-question-circle"></i> Xác nhận xóa sản phẩm</h4>
+                </div>
+                <div class="card-body text-center p-4">
+                    <h5 class="mb-4">Bạn có chắc chắn muốn bỏ sản phẩm này khỏi giỏ hàng?</h5>
+
+                    <div class="d-flex align-items-center justify-content-center mb-4 p-3 bg-light rounded shadow-sm border">
+                        <img src="@adminImageBaseUrl@(string.IsNullOrEmpty(Model.Photo) ? "no-image.jpg" : Model.Photo)"
+                             alt="@Model.ProductName"
+                             style="height: 80px; width: 80px; object-fit: cover; border-radius: 8px;"
+                             onerror="this.onerror=null; this.src='/images/no-image.jpg';">
+                        <div class="ms-3 text-start">
+                            <h6 class="fw-bold mb-1">@Model.ProductName</h6>
+                            <span class="text-danger fw-bold">@Model.SalePrice.ToString("N0") đ</span>
+                        </div>
+                    </div>
+
+                    <form action="~/Cart/RemoveFromCart" method="post">
+                        <input type="hidden" name="id" value="@Model.ProductID" />
+
+                        <a href="~/Cart/Index" class="btn btn-secondary px-4 me-2">
+                            <i class="bi bi-arrow-left"></i> Không, giữ lại
+                        </a>
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="bi bi-trash"></i> Có, xóa đi
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
