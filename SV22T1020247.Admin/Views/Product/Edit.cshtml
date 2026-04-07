@@ -25,6 +25,16 @@
             </div>
 
             <div class="card-body">
+
+                @* KHỐI HIỂN THỊ THÔNG BÁO THÀNH CÔNG TỪ TEMPDATA *@
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
                 <form id="formEdit" action="~/Product/Save" method="post" enctype="multipart/form-data">
 
                     <input type="hidden" asp-for="ProductID" />

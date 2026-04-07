@@ -144,7 +144,12 @@
                         @Html.ValidationSummary(true, "")
                     </div>
                 }
-
+                @if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success border-0 shadow-sm mb-3">
+        @TempData["SuccessMessage"]
+    </div>
+}
                 <form action="~/Account/Login" method="post">
                     <div class="form-floating">
                         <input type="email" name="email" class="form-control" id="emailInput" placeholder="name@example.com" required>

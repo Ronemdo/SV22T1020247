@@ -4,7 +4,7 @@ using SV22T1020247.Admin;
 using SV22T1020247.BusinessLayers;
 using SV22T1020247.Models.Catalog;
 using SV22T1020247.Models.Common;
-    
+
 namespace SV22T1020247.Admin.Controllers
 {
     [Authorize(Roles = "product,admin")]
@@ -127,16 +127,20 @@ namespace SV22T1020247.Admin.Controllers
                 if (string.IsNullOrEmpty(data.ProductDescription)) data.ProductDescription = "";
                 if (string.IsNullOrEmpty(data.Photo)) data.Photo = "nophoto.png";
 
+                // ĐÃ SỬA LOGIC Ở ĐÂY
                 if (data.ProductID == 0)
                 {
+                    // Nếu là thêm mới, sau khi thêm xong thì quay về trang danh sách Index
                     await CatalogDataService.AddProductAsync(data);
+                    return RedirectToAction("Index");
                 }
                 else
                 {
+                    // Nếu là cập nhật, sau khi cập nhật xong thì gán thông báo và quay lại trang Edit
                     await CatalogDataService.UpdateProductAsync(data);
+                    TempData["SuccessMessage"] = "Cập nhật thông tin mặt hàng thành công!";
+                    return RedirectToAction("Edit", new { id = data.ProductID });
                 }
-
-                return RedirectToAction("Index");
             }
             catch
             {
@@ -176,7 +180,7 @@ namespace SV22T1020247.Admin.Controllers
 
         public async Task<IActionResult> ListAttributes(int id)
         {
-            ViewBag.Title = "Danh sách thuộc tính của sản phẩm";
+            ViewBag.Title = "Danh sách thuộc tính của mặt hàng";
 
             var product = await CatalogDataService.GetProductAsync(id);
             if (product == null) return RedirectToAction("Index");
@@ -190,18 +194,20 @@ namespace SV22T1020247.Admin.Controllers
 
         public IActionResult CreateAttribute(int id)
         {
-            ViewBag.Title = "Bổ sung thuộc tính cho sản phẩm";
+            ViewBag.Title = "Bổ sung thuộc tính";
+            ViewBag.ProductID = id;
             var model = new ProductAttribute()
             {
                 AttributeID = 0,
-                ProductID = id
+                ProductID = id,
+                DisplayOrder = 1
             };
-            return View("EditAttribute", model);
+            return View("CreateAttribute", model);
         }
 
         public async Task<IActionResult> EditAttribute(int id, int attributeId)
         {
-            ViewBag.Title = "Cập nhật thông tin thuộc tính của sản phẩm";
+            ViewBag.Title = "Cập nhật thuộc tính của mặt hàng";
 
             var model = await CatalogDataService.GetAttributeAsync(attributeId);
             if (model == null) return RedirectToAction("Edit", new { id = id });
@@ -214,7 +220,8 @@ namespace SV22T1020247.Admin.Controllers
         {
             try
             {
-                ViewBag.Title = data.AttributeID == 0 ? "Bổ sung thuộc tính" : "Cập nhật thuộc tính";
+                ViewBag.Title = data.AttributeID == 0 ? "Bổ sung thuộc tính" : "Cập nhật thuộc tính của mặt hàng";
+                ViewBag.ProductID = data.ProductID;
 
                 if (string.IsNullOrWhiteSpace(data.AttributeName))
                     ModelState.AddModelError(nameof(data.AttributeName), "Vui lòng nhập tên thuộc tính");
@@ -223,21 +230,28 @@ namespace SV22T1020247.Admin.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    return View("EditAttribute", data);
+                    // Nếu lỗi, trả về đúng view tương ứng
+                    return data.AttributeID == 0 ? View("CreateAttribute", data) : View("EditAttribute", data);
                 }
 
                 if (data.AttributeID == 0)
+                {
                     await CatalogDataService.AddAttributeAsync(data);
+                    TempData["SuccessMessage"] = "Bổ sung thuộc tính thành công!";
+                    return RedirectToAction("CreateAttribute", new { id = data.ProductID });
+                }
                 else
+                {
                     await CatalogDataService.UpdateAttributeAsync(data);
-
-                // Lưu xong thì quay về trang Edit mặt hàng
-                return RedirectToAction("Edit", new { id = data.ProductID });
+                    TempData["SuccessMessage"] = "Cập nhật thuộc tính thành công!";
+                    return RedirectToAction("EditAttribute", new { id = data.ProductID, attributeId = data.AttributeID });
+                }
             }
             catch
             {
                 ModelState.AddModelError(string.Empty, "Hệ thống đang bận, vui lòng thử lại sau!");
-                return View("EditAttribute", data);
+                ViewBag.ProductID = data.ProductID;
+                return data.AttributeID == 0 ? View("CreateAttribute", data) : View("EditAttribute", data);
             }
         }
 
@@ -252,7 +266,7 @@ namespace SV22T1020247.Admin.Controllers
             var model = await CatalogDataService.GetAttributeAsync(attributeId);
             if (model == null) return RedirectToAction("Edit", new { id = id });
 
-            ViewBag.Title = "Xóa thuộc tính của sản phẩm";
+            ViewBag.Title = "Xóa thuộc tính của mặt hàng";
             return View(model);
         }
 
@@ -260,7 +274,7 @@ namespace SV22T1020247.Admin.Controllers
 
         public async Task<IActionResult> ListPhotos(int id)
         {
-            ViewBag.Title = "Danh sách hình ảnh của sản phẩm";
+            ViewBag.Title = "Danh sách hình ảnh của mặt hàng";
 
             var product = await CatalogDataService.GetProductAsync(id);
             if (product == null) return RedirectToAction("Index");
@@ -272,7 +286,7 @@ namespace SV22T1020247.Admin.Controllers
 
         public IActionResult CreatePhoto(int id)
         {
-            ViewBag.Title = "Bổ sung hình ảnh cho sản phẩm";
+            ViewBag.Title = "Bổ sung hình ảnh cho mặt hàng";
             var model = new ProductPhoto()
             {
                 PhotoID = 0,
@@ -285,7 +299,7 @@ namespace SV22T1020247.Admin.Controllers
 
         public async Task<IActionResult> EditPhoto(int id, int photoId)
         {
-            ViewBag.Title = "Cập nhật thông tin hình ảnh của sản phẩm";
+            ViewBag.Title = "Cập nhật thông tin hình ảnh củamặt hàng";
             var model = await CatalogDataService.GetPhotoAsync(photoId);
             if (model == null) return RedirectToAction("Edit", new { id = id });
 
@@ -349,7 +363,7 @@ namespace SV22T1020247.Admin.Controllers
             var model = await CatalogDataService.GetPhotoAsync(photoId);
             if (model == null) return RedirectToAction("Edit", new { id = id });
 
-            ViewBag.Title = "Xóa hình ảnh của sản phẩm";
+            ViewBag.Title = "Xóa hình ảnh của mặt hàng";
             return View(model);
         }
     }

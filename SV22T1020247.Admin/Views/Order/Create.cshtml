@@ -112,15 +112,28 @@
     </div>
 </div>
 
+<div class="modal fade" id="successOrderModal" tabindex="-1" aria-labelledby="successOrderModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-success">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successOrderModalLabel"><i class="bi bi-check-circle-fill me-2"></i>Thành công</h5>
+            </div>
+            <div class="modal-body fs-5 text-center py-4">
+                Lập đơn hàng thành công!
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-success px-4" id="btnGoToDetail">Đồng ý & Xem chi tiết</button>
+            </div>
+        </div>
+    </div>
+</div>
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Sửa lại cách gọi hàm để không bị lỗi khi mới load trang
             paginationSearch(null, document.getElementById("formSearch"), 1);
             showCart();
         });
 
-        // Giữ nguyên kiểu Fetch của bạn cho hàm ShowCart
         function showCart() {
             fetch('/Order/ShowCart')
                 .then(response => response.text())
@@ -130,14 +143,11 @@
                 .catch(error => console.error('Lỗi showCart:', error));
         }
 
-        // Hàm phân trang và tìm kiếm (Dùng Fetch)
         function paginationSearch(event, form, page) {
             if (event) event.preventDefault();
 
-            // Lấy dữ liệu từ form search
             const searchValue = form.querySelector('[name="SearchValue"]').value;
             const pageSize = form.querySelector('[name="PageSize"]').value;
-            // ... lấy thêm các field khác nếu cần
 
             fetch(`${form.action}?SearchValue=${searchValue}&Page=${page}&PageSize=${pageSize}`)
                 .then(response => response.text())
@@ -146,7 +156,6 @@
                 });
         }
 
-        // HÀM QUAN TRỌNG: Cập nhật và đóng Modal
         function UpdateCartItem(event, form) {
             event.preventDefault();
             const formData = new FormData(form);
@@ -160,13 +169,9 @@
                 if (data.code === 0) {
                     alert("Lỗi: " + data.message);
                 } else {
-                    showCart(); // Load lại giỏ hàng phía sau
+                    showCart();
 
-                    // --- ĐOẠN SỬA ĐỂ ĐÓNG MODAL ---
-                    // Cách 1: Tìm theo ID bạn đã đặt (kiểm tra lại ID này ở file Layout)
                     let modalElement = document.getElementById('modal-form');
-
-                    // Cách 2: Nếu không thấy ID trên, tự tìm cái modal nào đang hiện (show)
                     if (!modalElement) {
                         modalElement = document.querySelector('.modal.show');
                     }
@@ -176,11 +181,9 @@
                         if (modalInstance) {
                             modalInstance.hide();
                         } else {
-                            // Nếu chưa có Instance thì khởi tạo rồi ẩn
                             new bootstrap.Modal(modalElement).hide();
                         }
                     }
-                    // ------------------------------
                 }
             })
             .catch(error => console.error('Lỗi Update:', error));
@@ -218,10 +221,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.code > 0) {
-                    alert("Đặt hàng thành công!");
-                    window.location.href = '/Order/Detail/' + data.code;
+                    // CẬP NHẬT: Hiển thị Modal thay vì dùng alert()
+                    const successModal = new bootstrap.Modal(document.getElementById('successOrderModal'));
+                    successModal.show();
+
+                    // Gắn sự kiện chuyển trang cho nút "Đồng ý & Xem chi tiết"
+                    document.getElementById('btnGoToDetail').onclick = function() {
+                        window.location.href = '/Order/Detail/' + data.code;
+                    };
                 } else {
-                    alert(data.message);
+                    alert(data.message); // Vẫn dùng alert nếu báo lỗi (như chưa chọn tỉnh thành, giỏ trống...)
                 }
             });
         }

@@ -13,16 +13,17 @@ namespace SV22T1020247.Admin.Controllers
     /// <summary>
     /// Các chức năng liên quan đến tài khoản
     /// </summary>
-   [Authorize]
+    [Authorize]
     public class AccountController : Controller
     {
-       [AllowAnonymous]
-       [HttpGet]
+        [AllowAnonymous]
+        [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
-        [AllowAnonymous] 
+
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
@@ -115,7 +116,9 @@ namespace SV22T1020247.Admin.Controllers
                 return View();
             }
 
-            return RedirectToAction("Logout");
+            // Đã sửa đổi logic tại đây: Lưu thông báo và chuyển hướng lại trang ChangePassword
+            TempData["SuccessMessage"] = "Đã đổi mật khẩu thành công!";
+            return RedirectToAction("ChangePassword");
         }
 
         /// <summary>

@@ -67,7 +67,7 @@ namespace SV22T1020247.Admin.Controllers
         }
 
         /// <summary>
-        /// Tìm kiếm sản phẩm để đưa vào giỏ hàng
+        /// Tìm kiếm mặt hàng để đưa vào giỏ hàng
         /// </summary>
         public async Task<IActionResult> SearchProduct(ProductSearchInput input)
         {

@@ -20,6 +20,14 @@
             </div>
 
             <div class="card-body">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
                 <form id="formEdit" action="~/Product/SaveAttribute" method="post">
                     <input type="hidden" name="AttributeID" value="@Model.AttributeID" />
                     <input type="hidden" name="ProductID" value="@Model.ProductID" />

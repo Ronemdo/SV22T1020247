@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using SV22T1020247.BusinessLayers;
 using SV22T1020247.Shop.Models;
-using SV22T1020247.Shop; 
+using SV22T1020247.Shop;
 using System.Security.Claims;
 using System.Text.Json;
 
