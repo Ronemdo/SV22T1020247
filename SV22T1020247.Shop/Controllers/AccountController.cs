@@ -118,14 +118,24 @@ namespace SV22T1020247.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(string customerName, string email, string phone, string address, string province, string password)
+        public async Task<IActionResult> Register(string customerName, string email, string phone, string address, string province, string password, string confirmPassword)
         {
+            // Bổ sung kiểm tra confirmPassword có bị trống hay không
             if (string.IsNullOrWhiteSpace(customerName) ||
                 string.IsNullOrWhiteSpace(email) ||
                 string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(confirmPassword) ||
                 string.IsNullOrWhiteSpace(province))
             {
                 ModelState.AddModelError("", "Vui lòng nhập đầy đủ các trường có dấu sao (*)");
+                ViewBag.Provinces = await DictionaryDataService.ListProvincesAsync();
+                return View();
+            }
+
+            // THÊM KIỂM TRA MẬT KHẨU XÁC NHẬN
+            if (password != confirmPassword)
+            {
+                ModelState.AddModelError("", "Mật khẩu và xác nhận mật khẩu không khớp!");
                 ViewBag.Provinces = await DictionaryDataService.ListProvincesAsync();
                 return View();
             }
@@ -143,6 +153,7 @@ namespace SV22T1020247.Web.Controllers
                 ViewBag.Provinces = await DictionaryDataService.ListProvincesAsync();
                 return View();
             }
+
             var newCustomer = new Models.Partner.Customer()
             {
                 CustomerName = customerName.Trim(),
@@ -154,11 +165,13 @@ namespace SV22T1020247.Web.Controllers
                 IsLocked = false,
                 Password = CryptHelper.HashMD5(password) // GỌI HÀM TỪ CRYPTHELPER
             };
+
             int result = await PartnerDataService.AddCustomerAsync(newCustomer);
             if (result > 0)
             {
                 return RedirectToAction("Login");
             }
+
             ModelState.AddModelError("", "Đã có lỗi xảy ra trong quá trình lưu dữ liệu. Vui lòng thử lại!");
             ViewBag.Provinces = await DictionaryDataService.ListProvincesAsync();
             return View();
