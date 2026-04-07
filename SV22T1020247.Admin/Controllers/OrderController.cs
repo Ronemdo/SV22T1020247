@@ -6,6 +6,11 @@ using SV22T1020247.BusinessLayers;
 using SV22T1020247.Models.Catalog;
 using SV22T1020247.Models.Common;
 using SV22T1020247.Models.Sales;
+using SV22T1020247.Admin.AppCodes;
+using SV22T1020247.BusinessLayers;
+using SV22T1020247.Models.Catalog;
+using SV22T1020247.Models.Common;
+using SV22T1020247.Models.Sales;
 
 namespace SV22T1020247.Admin.Controllers
 {
@@ -16,7 +21,7 @@ namespace SV22T1020247.Admin.Controllers
         private const string SEARCH_PRODUCT = "SearchProductToSale";
 
         /// <summary>
-        /// Giao diện tìm kiếm đơn hàng - Lấy dữ liệu từ Session để giữ trạng thái
+        /// Giao diện tìm kiếm đơn hàng 
         /// </summary>
         public IActionResult Index()
         {
@@ -43,7 +48,7 @@ namespace SV22T1020247.Admin.Controllers
         {
             ApplicationContext.SetSessionData(ORDER_SEARCH_INPUT, input);
             var result = await SalesDataService.ListOrdersAsync(input);
-            return View(result); // Trả về Search.cshtml
+            return View(result);
         }
 
         /// <summary>
@@ -114,7 +119,7 @@ namespace SV22T1020247.Admin.Controllers
             return Json(new ApiResult(orderID, "Lập đơn hàng thành công!"));
         }
 
-        // ================= CÁC PHƯƠNG THỨC BỔ TRỢ GIỎ HÀNG =================
+
 
         /// <summary>
         /// Hiển thị danh sách mặt hàng đang có trong giỏ
@@ -179,7 +184,7 @@ namespace SV22T1020247.Admin.Controllers
             return PartialView();
         }
 
-        // ================= CÁC PHƯƠNG THỨC ĐIỀU HƯỚNG DETAIL VÀ CHI TIẾT ĐƠN =================
+
 
         /// <summary>
         /// Xem thông tin chi tiết của một đơn hàng
@@ -201,7 +206,7 @@ namespace SV22T1020247.Admin.Controllers
         public async Task<IActionResult> EditDetail(int id = 0, int productId = 0)
         {
             var order = await SalesDataService.GetOrderAsync(id);
-            // SỬA Ở ĐÂY: Thêm (int)
+
             if (order == null || (int)order.Status != 1)
                 return Content("Đơn hàng đã được duyệt, không thể sửa đổi mặt hàng!");
 
@@ -219,7 +224,7 @@ namespace SV22T1020247.Admin.Controllers
         public async Task<IActionResult> UpdateDetail(int orderID, int productID, int quantity, decimal salePrice)
         {
             var order = await SalesDataService.GetOrderAsync(orderID);
-            // SỬA Ở ĐÂY: Thêm (int)
+
             if (order == null || (int)order.Status != 1)
             {
                 TempData["Message"] = "Đơn hàng đã được duyệt, không thể thay đổi mặt hàng.";
@@ -248,7 +253,7 @@ namespace SV22T1020247.Admin.Controllers
         public async Task<IActionResult> DeleteDetail(int id = 0, int productId = 0)
         {
             var order = await SalesDataService.GetOrderAsync(id);
-            // SỬA Ở ĐÂY: Thêm (int)
+
             if (order == null || (int)order.Status != 1)
             {
                 TempData["Message"] = "Không thể xóa mặt hàng vì đơn hàng đã được duyệt hoặc xử lý.";
@@ -268,41 +273,29 @@ namespace SV22T1020247.Admin.Controllers
             return PartialView(item);
         }
 
-        // ================= CHỨC NĂNG XỬ LÝ TRẠNG THÁI ĐƠN HÀNG =================
+
 
         /// <summary>
-        /// Duyệt chấp nhận đơn hàng (Chỉ cho phép khi đơn hàng Mới - Status = 1)
+        /// Duyệt chấp nhận đơn hàng 
         /// </summary>
         public async Task<IActionResult> Accept(int id = 0)
         {
             var order = await SalesDataService.GetOrderAsync(id);
-
             if (order == null || (int)order.Status != 1)
                 return Content("Đơn hàng này không ở trạng thái chờ duyệt!");
 
             if (Request.Method == "POST")
             {
-                // 1. Sử dụng luôn hàm GetUserData() bạn đã viết sẵn để lấy thông tin
+
                 var userData = User.GetUserData();
 
-                int currentEmployeeId = 0;
-                if (userData != null && !string.IsNullOrEmpty(userData.UserId))
-                {
-                    currentEmployeeId = int.Parse(userData.UserId);
-                }
 
-                // 2. Chặn lỗi nếu vẫn không lấy được ID
-                if (currentEmployeeId <= 0)
-                {
-                    return Content("Lỗi: Không lấy được thông tin tài khoản nhân viên đang đăng nhập!");
-                }
+                int employeeID = userData != null ? Convert.ToInt32(userData.UserId) : 0;
 
-                // 3. Truyền đúng ID của nhân viên xuống DB
-                await SalesDataService.AcceptOrderAsync(id, currentEmployeeId);
 
+                await SalesDataService.AcceptOrderAsync(id, employeeID);
                 return RedirectToAction("Detail", new { id = id });
             }
-
             return PartialView(id);
         }
 
@@ -312,7 +305,7 @@ namespace SV22T1020247.Admin.Controllers
         public async Task<IActionResult> Shipping(int id = 0)
         {
             var order = await SalesDataService.GetOrderAsync(id);
-            // SỬA Ở ĐÂY: Thêm (int)
+
             if (order == null || (int)order.Status != 2)
                 return Content("Đơn hàng phải được duyệt trước khi giao hàng!");
 
@@ -331,8 +324,7 @@ namespace SV22T1020247.Admin.Controllers
 
             var input = new PaginationSearchInput() { Page = 1, PageSize = 100, SearchValue = "" };
             var result = await PartnerDataService.ListShippersAsync(input);
-            // LƯU Ý: Chỗ này có thể là result.DataItems hoặc result.Data tùy theo project của bạn.
-            // Trong hàm này tôi tạm để DataItems theo gợi ý lúc nãy. Nếu lỗi CS1061 ở đây thì đổi lại nhé.
+
             ViewBag.Shippers = result.DataItems;
 
             return PartialView(id);
@@ -357,19 +349,22 @@ namespace SV22T1020247.Admin.Controllers
         }
 
         /// <summary>
-        /// Từ chối đơn hàng (Chỉ cho phép khi đơn Mới lập - Status = 1)
+        /// Từ chối đơn hàng 
         /// </summary>
         public async Task<IActionResult> Reject(int id = 0)
         {
             var order = await SalesDataService.GetOrderAsync(id);
-            // SỬA Ở ĐÂY: Thêm (int)
             if (order == null || (int)order.Status != 1)
                 return Content("Chỉ có thể từ chối những đơn hàng vừa mới lập!");
 
             if (Request.Method == "POST")
             {
-                // Tạm gán mã nhân viên là 1
-                await SalesDataService.RejectOrderAsync(id, 1);
+
+                var userData = User.GetUserData();
+                int employeeID = userData != null ? Convert.ToInt32(userData.UserId) : 0;
+
+
+                await SalesDataService.RejectOrderAsync(id, employeeID);
                 return RedirectToAction("Detail", new { id = id });
             }
             return PartialView(id);
@@ -381,7 +376,7 @@ namespace SV22T1020247.Admin.Controllers
         public async Task<IActionResult> Cancel(int id = 0)
         {
             var order = await SalesDataService.GetOrderAsync(id);
-            // SỬA Ở ĐÂY: Thêm (int) vào cả 2 vế
+
             if (order == null || ((int)order.Status != 1 && (int)order.Status != 2))
                 return Content("Đơn hàng đang giao hoặc đã hoàn tất, không thể hủy!");
 
@@ -399,7 +394,7 @@ namespace SV22T1020247.Admin.Controllers
         public async Task<IActionResult> Delete(int id = 0)
         {
             var order = await SalesDataService.GetOrderAsync(id);
-            // SỬA Ở ĐÂY: Thêm (int) vào cả 3 vế
+
             if (order == null || ((int)order.Status != 1 && (int)order.Status != -1 && (int)order.Status != -2))
                 return Content("Tuyệt đối không được xóa đơn hàng đã duyệt, đang giao hoặc đã hoàn tất!");
 

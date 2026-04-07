@@ -26,7 +26,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in Model) 
                 {
                     stt += 1;
                     sumPrice += item.TotalPrice;
@@ -38,14 +38,14 @@
                         <td class="text-end">@item.SalePrice</td>
                         <td class="text-end">@item.TotalPrice</td>
                         <td class="text-end text-nowrap">
-                            <a class="btn btn-sm btn-primary open-modal"
-                               href="~/Order/EditCartItem?productId=@item.ProductID"
-                               onclick="openModal(event,this)">
+                            <a class="btn btn-sm btn-primary open-modal" 
+                                href="~/Order/EditCartItem?productId=@item.ProductID"
+                                onclick="openModal(event,this)">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <a class="btn btn-sm btn-danger open-modal" href="~/Order/DeleteCartItem?productId=@item.ProductID"
                                onclick="openModal(event,this)">
-
+                                
                                 <i class="bi bi-dash"></i>
 
                             </a>

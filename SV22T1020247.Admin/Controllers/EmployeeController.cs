@@ -75,17 +75,15 @@ namespace SV22T1020247.Admin.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Delete(int id)
         {
-            // Nếu method là POST thì thực hiện xóa
             if (Request.Method == "POST")
             {
                 await HRDataService.DeleteEmployeeAsync(id);
                 return RedirectToAction("Index");
             }
-
-            // GET: hiển thị thông tin nhân viên cần xóa
             var model = await HRDataService.GetEmployeeAsync(id);
             if (model == null)
                 return RedirectToAction("Index");
+            ViewBag.AllowDelete = !(await HRDataService.IsUsedEmployeeAsync(id));
 
             return View(model);
         }

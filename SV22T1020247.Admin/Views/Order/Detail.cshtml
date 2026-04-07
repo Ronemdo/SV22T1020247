@@ -2,9 +2,9 @@
 @{
     ViewBag.Title = "Chi tiết đơn hàng";
 
-    // Đổi List thành IEnumerable để ép kiểu an toàn, không bị null
+    
     var details = ViewBag.Details as IEnumerable<SV22T1020247.Models.Sales.OrderDetailViewInfo>;
-    decimal totalMoney = 0; // Biến cộng dồn tổng tiền
+    decimal totalMoney = 0; 
 }
 
 @section PageToolBar {
@@ -32,7 +32,7 @@
             else if ((int)Model.Status == 3) // Trạng thái 3: Đang giao
             {
                 <li><a class="dropdown-item open-modal" href="~/Order/Finish/@Model.OrderID">Hoàn tất đơn hàng</a></li>
-                
+                @* Đã bỏ mục Hủy đơn hàng và đường gạch ngang ở đây *@
             }
         </ul>
     </div>
@@ -52,15 +52,7 @@
     </a>
 }
 
-@* KHOẢNG CHỨA THÔNG BÁO LỖI (NẾU CÓ TỪ TEMPDATA) *@
-@if (TempData["Message"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
-        <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
-        <strong>Lỗi thao tác:</strong> @TempData["Message"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+
 
 <div class="alert alert-success d-flex align-items-center mb-3">
     <i class="bi bi-info-circle-fill fs-4 me-2"></i>
